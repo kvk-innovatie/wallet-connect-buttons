@@ -8,11 +8,11 @@
     "build": "vite build",
     "preview": "vite preview",
     "server:node": "cd backend-nodejs && npm install && npm start",
-    "server:python": "cd backend-python && python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt && python3 server.py"
+    "server:python": "cd backend-python && python3 -m venv venv && . venv/bin/activate && pip install -r requirements.txt && python3 server.py"
   },
   "dependencies": {
     "vue": "^3.5.18",
-    "wallet-connect-button-vue": "^1.0.15"
+    "wallet-connect-button-vue": "file:../wallet-connect-button-vue"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.1",
