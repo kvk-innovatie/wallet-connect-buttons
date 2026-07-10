@@ -45,8 +45,8 @@ function App() {
             <div>
               <h3>With your personal wallet</h3>
               <WalletConnectButton
-                clientId="nlw_bc45e349dfe586ac0290e0ad951436a7"
-                apiKey="03a2d5c2665d877ee8ccd8aef8df440e3a8cbc99c2e9892bfcedca978956e2e5"
+                clientId="nlw_c4ee72ead0d6f8a821fcf2e8776ac845"
+                apiKey="9efb59f4784d8b0b1121a4474c3655e402ac83f1681e208a0f7726abefb3b557"
                 label="Share data with your wallet (quick and easy, only frontend)"
                 lang="en"
                 onSuccess={(attrs) => {
