@@ -1,0 +1,13 @@
+{
+  "extends": "../core/tsconfig.json",
+  "compilerOptions": {
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "src",
+    "../core/src/vite-env.d.ts",
+    "../ui-vanilla/src/globals.d.ts"
+  ]
+}

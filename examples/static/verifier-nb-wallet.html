@@ -4,23 +4,22 @@
     <title>Wallet Connect Example</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
-      nl-wallet-button::part(button) {
+      nb-wallet-connect-button::part(button) {
         border-radius: 6px;
         padding: 12px 20px;
         margin: 4px;
       }
-      nl-wallet-button::part(button-span) {
+      nb-wallet-connect-button::part(button-span) {
         font-weight: bold;
       }
     </style>
   </head>
   <body>
     <div>
-      <wallet-connect-button
+      <nb-wallet-connect-button
         service-id="EH_F40AC4987B1B5D62"
         api-key="36b0f411bf26cf52c9eb9b1fe4a0858a9593c0ab00bf8d8d8c11d87cff2f30d2"
         use-local-wc-server
-        nbwallet
         label="Share data with your NB Wallet"
         lang="en"
       />
@@ -28,7 +27,7 @@
 
     <pre id="attributes-content"></pre>
 
-    <script src="../../packages/wallet-connect-button-vanillajs/public/wallet-connect-button.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nb-wallet-connect-button-vanillajs@2/dist/nb-wallet-connect-button.js"></script>
     <script>
       function handleSuccess(event) {
         let attributes = event.detail;
@@ -40,7 +39,7 @@
         console.log("Something went wrong:", event.detail);
       }
 
-      const wallet_button = document.getElementsByTagName("wallet-connect-button")[0];
+      const wallet_button = document.getElementsByTagName("nb-wallet-connect-button")[0];
 
       wallet_button.addEventListener("success", handleSuccess, false);
       wallet_button.addEventListener("failed", handleFailed, false);

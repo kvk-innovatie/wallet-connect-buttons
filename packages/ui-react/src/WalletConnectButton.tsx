@@ -1,6 +1,5 @@
 import {
   WalletConnectController,
-  ensureFonts,
   ensureStyles,
   selectBrand,
   type DisclosedAttributesResponse,
@@ -82,7 +81,7 @@ export const createWalletConnectButton = (config: ButtonConfig) => {
 
     useEffect(() => {
       ensureStyles(document)
-      if (config.fonts) ensureFonts(document)
+      config.fonts?.(document)
     }, [])
 
     useEffect(() => {

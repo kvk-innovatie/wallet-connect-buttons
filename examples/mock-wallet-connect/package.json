@@ -1,0 +1,12 @@
+{
+  "name": "mock-wallet-connect",
+  "private": true,
+  "type": "module",
+  "description": "A fake wallet-connect server: scripted sessions for trying the buttons without a wallet",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "express": "^4.18.0"
+  }
+}

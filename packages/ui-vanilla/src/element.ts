@@ -1,6 +1,5 @@
 import {
   WalletConnectController,
-  ensureFonts,
   ensureStyles,
   selectBrand,
   type BrandSet,
@@ -12,8 +11,8 @@ import { WalletDialog } from "./dialog"
 import { h } from "./dom"
 
 export interface DefineOptions {
-  /** Register the RO Sans font faces on the page (the default package entry does, the slim one does not). */
-  fonts?: boolean
+  /** Registers font faces on the page (the default package entry passes core/fonts ensureFonts; the slim entry nothing). */
+  fonts?: (doc: Document) => void
   /** Alternative fetch, mainly for tests. */
   fetch?: Fetch
   /** Shown once when the `nbwallet` attribute is used on a package that has no NB brand. */
@@ -49,14 +48,32 @@ const attr = (el: HTMLElement, ...names: string[]): string | undefined => {
   return undefined
 }
 
+/** An instance of the button element. */
+export interface WalletConnectButtonElement extends HTMLElement {
+  /** The controller behind this element (read-only; for tests and advanced integrations). */
+  readonly walletConnect: WalletConnectController | null
+}
+
+/** The element class a package registers. */
+export interface WalletConnectButtonElementClass {
+  new (): WalletConnectButtonElement
+  readonly version: string
+  readonly observedAttributes: readonly string[]
+  readonly prototype: WalletConnectButtonElement
+}
+
 /**
  * Build the custom element class for a tag and brand set, and register it unless the tag is taken.
  * Returns the class either way.
  */
-export const defineWalletConnectButton = (tagName: string, brands: BrandSet, options: DefineOptions = {}) => {
+export const defineWalletConnectButton = (
+  tagName: string,
+  brands: BrandSet,
+  options: DefineOptions = {},
+): WalletConnectButtonElementClass => {
   let warned = false
 
-  class WalletConnectButtonElement extends HTMLElement {
+  class Element extends HTMLElement implements WalletConnectButtonElement {
     static readonly version: string = __WCB_VERSION__
     static get observedAttributes(): readonly string[] {
       return OBSERVED_ATTRIBUTES
@@ -76,7 +93,7 @@ export const defineWalletConnectButton = (tagName: string, brands: BrandSet, opt
 
     connectedCallback(): void {
       ensureStyles(this.root)
-      if (options.fonts) ensureFonts(this.ownerDocument)
+      options.fonts?.(this.ownerDocument)
       this.setup()
     }
 
@@ -195,12 +212,12 @@ export const defineWalletConnectButton = (tagName: string, brands: BrandSet, opt
   if (typeof customElements !== "undefined") {
     const existing = customElements.get(tagName)
     if (!existing) {
-      customElements.define(tagName, WalletConnectButtonElement)
-    } else if ((existing as { version?: string }).version !== WalletConnectButtonElement.version) {
-      console.warn(`<${tagName}> is already defined by another version (${(existing as { version?: string }).version ?? "unknown"}); this one (${WalletConnectButtonElement.version}) is not registered.`)
+      customElements.define(tagName, Element)
+    } else if ((existing as { version?: string }).version !== Element.version) {
+      console.warn(`<${tagName}> is already defined by another version (${(existing as { version?: string }).version ?? "unknown"}); this one (${Element.version}) is not registered.`)
     }
   }
-  return WalletConnectButtonElement
+  return Element as unknown as WalletConnectButtonElementClass
 }
 
 /** The `failed` event detail, in the 1.x shape: the inner `[session_token, session_type]` pair. */

@@ -1,53 +1,55 @@
 {
   "name": "wallet-connect-button-react",
-  "version": "1.1.37",
-  "description": "A React component for NP Wallet integration",
-  "main": "dist/index.js",
-  "module": "dist/index.esm.js",
-  "types": "dist/index.d.ts",
+  "version": "2.0.0",
+  "description": "React component for NP Wallet, Business Wallet and 18up wallet connect",
+  "type": "module",
+  "license": "MIT",
+  "author": "Michiel Mayer",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/wallet-connect-button-react/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/wallet-connect-button-react/src/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./slim": {
+      "types": "./dist/wallet-connect-button-react/src/slim.d.ts",
+      "import": "./dist/slim.js",
+      "require": "./dist/slim.cjs"
+    },
+    "./style.css": "./dist/style.css"
+  },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
+  "sideEffects": false,
   "scripts": {
-    "build": "rollup -c",
-    "dev": "rollup -c -w",
-    "lint": "eslint src --ext .ts,.tsx",
+    "build": "vite build && node ../../tooling/emit-types.mjs .",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "react",
-    "nl-wallet",
-    "component",
     "wallet",
+    "wallet-connect",
+    "eudi",
     "button"
   ],
-  "author": "Michiel Mayer",
-  "license": "MIT",
   "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
-    "axios": ">=1.0.0"
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.0",
-    "@rollup/plugin-replace": "^5.0.0",
-    "rollup-plugin-copy": "^3.5.0",
-    "@rollup/plugin-json": "^6.0.0",
-    "@rollup/plugin-node-resolve": "^15.0.0",
-    "@rollup/plugin-typescript": "^11.0.0",
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
-    "eslint": "^8.0.0",
-    "eslint-plugin-react": "^7.0.0",
-    "eslint-plugin-react-hooks": "^4.0.0",
-    "rollup": "^4.0.0",
-    "typescript": "^5.0.0",
-    "tslib": "^2.0.0"
+    "@wallet-connect/core": "*",
+    "@wallet-connect/ui-react": "*"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/kvk-innovatie/wallet-connect-buttons.git",
     "directory": "packages/wallet-connect-button-react"
   },
-  "homepage": "https://github.com/kvk-innovatie/wallet-connect-buttons/tree/main/packages/wallet-connect-button-react#readme"
+  "homepage": "https://github.com/kvk-innovatie/wallet-connect-buttons/tree/main/packages/wallet-connect-button-react#readme",
+  "bugs": "https://github.com/kvk-innovatie/wallet-connect-buttons/issues"
 }

@@ -1,4 +1,5 @@
 import WalletConnectButton from "wallet-connect-button-react";
+import NbWalletConnectButton from "nb-wallet-connect-button-react";
 import { useState } from "react";
 import "./App.css";
 
@@ -69,6 +70,18 @@ function App() {
                 clientId="nlw_bd2f376caef0d76a21c177181a9d1d89"
                 apiKey="1a3e81b556e7716d8c7643fba10b09e57e8d6dedb340ec0e164ee31ce90eb4d4"
                 label="Share data from your business wallet (remote, quick and easy)"
+                lang="en"
+                onSuccess={(attrs) => {
+                  setAttributes(attrs);
+                }}
+              />
+            </div>
+            <div>
+              <h3>With your NB Wallet (ZZP Garantie app)</h3>
+              <NbWalletConnectButton
+                serviceId="EH_A91C4D2F6B30E785"
+                apiKey="f1e2720e399ccf3f61741212068c629fb8fd845526ce004b192e2a6f7b43fdea"
+                label="Share data with your NB Wallet"
                 lang="en"
                 onSuccess={(attrs) => {
                   setAttributes(attrs);

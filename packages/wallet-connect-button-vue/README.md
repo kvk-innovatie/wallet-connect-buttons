@@ -1,6 +1,6 @@
 # wallet-connect-button-vue
 
-A Vue 3 component for NP Wallet integration.
+Wallet Connect button for **NP Wallet**, **Business Wallet** and **18up**. Part of [wallet-connect-buttons](https://github.com/kvk-innovatie/wallet-connect-buttons). For NB Wallet / ZZP Garantie use the `nb-wallet-connect-button-*` packages.
 
 ## Installation
 
@@ -10,69 +10,50 @@ npm install wallet-connect-button-vue
 
 ## Usage
 
-1. Import the component in your Vue app:
-
-```typescript
-import { WalletConnectButton } from 'wallet-connect-button-vue';
-```
-
-2. Use the component in your template:
-
 ```vue
+<script setup>
+import { WalletConnectButton } from "wallet-connect-button-vue";
+// or, without the embedded RO Sans fonts:
+// import { WalletConnectButton } from "wallet-connect-button-vue/slim";
+
+const onSuccess = (attributes) => console.log(attributes);
+</script>
+
 <template>
-  <WalletConnectButton 
-    :service-id="'your-service-id'" 
-    :api-key="'your-api-key'"
-    :wallet-connect-host="'https://wallet-connect.eu'"
-    :label="'Connect Wallet'"
-    @success="onWalletSuccess" />
+  <WalletConnectButton service-id="your-service-id" api-key="your-api-key" lang="en" @success="onSuccess" />
 </template>
 ```
 
-3. Handle the success event in your component:
+## Props
 
-```typescript
-<script setup>
-const onWalletSuccess = (attributes: any) => {
-  console.log('Wallet connected successfully:', attributes);
-}
-</script>
-```
+- `serviceId` – the registration's identifier (NB Wallet Connect calls it a **service id**). `clientId` is the
+  original name for the same value and still works; `serviceId` wins when both are set.
+- `apiKey` – optional. With it the button calls the wallet-connect server directly; without it the page's own
+  backend must proxy `/api/create-session` and `/api/disclosed-attributes` (see `examples/backends`).
+- `onSuccess(attributes)` – called with the disclosed attributes once a session finished.
+- `onFailed(outcome)` – optional; called when the user closes the dialog after a failure.
+- `label` – button text (defaults to the wallet's own, in `lang`).
+- `lang` – `"nl"` (default) or `"en"`.
+- `helpBaseUrl` – optional; where "No app yet?" links point (defaults per wallet).
+- `issuance` – the session issues data to the wallet instead of asking for it.
+- `useLocalWcServer` – talk to a wallet-connect server on localhost (development).
+- `returnUrl` – where the wallet sends the user after a same-device disclosure (iframe support, see below).
+- `business` – Business Wallet instead of NP Wallet (other servers, colours and texts).
+- `over18` – 18up instead of NP Wallet.
+- `class` and `style` fall through to the `<button>`; the stable class names are `.wcb-button` and
+  `.wcb-button__label`.
 
-## API
-
-### Props
-
-- `serviceId: string` - The registration's identifier. NB Wallet Connect calls it a
-  **service id**: one company registers a service per website or application.
-- `clientId: string` - The original name for the same value, still fully supported.
-  Give either one; `serviceId` wins when both are set.
-
-With the `nbwallet` attribute the button talks to NB Wallet Connect, which has renamed
-this identifier throughout its API (`service_id`, `/api/service/...`). Every other
-variant still calls its host with `client_id`. That switch is automatic; you only
-choose which prop name to write.
-- `apiKey?: string` - Optional. API key for authentication
-- `walletConnectHost?: string` - Optional. Custom wallet connect host URL (defaults to https://wallet-connect.eu)
-- `label?: string` - Optional. Custom button text (defaults to 'Inloggen met NP Wallet')
-- `lang?: string` - Optional. Language setting for the wallet button (defaults to 'nl')
-- `returnUrl?: string` - Optional. Where the wallet app sends the user after a same-device
-  disclosure; the verifier appends `session_token` to it. Defaults to the address of the page
-  the button is on. Set it when the button lives in an iframe (see below).
-
-### Events
-
-- `success` - Emitted when wallet connection succeeds
+`@success` and `@failed` are the `onSuccess` / `onFailed` props. Requires Vue 3.3+. The dialog is teleported
+to `<body>`.
 
 ### Embedding in an iframe
 
-Cross-device (QR code) works in an iframe as is. Same-device needs two things, because the
-wallet app returns the user to a page and the button inside the iframe cannot see the
-address of the page around it:
+Cross-device (QR code) works in an iframe as is. Same-device needs two things, because the wallet app returns
+the user to a page and the button inside the iframe cannot see the address of the page around it:
 
-1. Set `return-url` to the full address of the page that contains the iframe.
-2. On that page, when it loads with `session_token` (and, if present, `nonce`) in its query
-   string, hand them to the iframe. Either append them to the iframe's `src`, or post them in:
+1. Set `returnUrl` to the full address of the page that contains the iframe.
+2. On that page, when it loads with `session_token` (and, if present, `nonce`) in its query string, hand them
+   to the iframe. Either append them to the iframe's `src`, or post them in:
 
 ```javascript
 const params = new URLSearchParams(window.location.search);
@@ -85,25 +66,27 @@ if (sessionToken) {
       new URL(iframe.src).origin,
     );
   });
-  // Optional: drop the used token from the page's address so a reload doesn't retry it.
   params.delete("session_token");
   params.delete("nonce");
   history.replaceState({}, "", `${location.pathname}${params.size ? `?${params}` : ""}`);
 }
 ```
 
-The button only accepts the message when it comes from the origin of `return-url`. It then
-fetches the disclosed attributes and calls `onSuccess` inside the iframe, exactly as it does
-when the token is in its own query string.
+The button only accepts the message when it comes from the origin of `returnUrl`.
+
+## Migrating from 1.x
+
+| 1.x | 2.0 |
+|---|---|
+| `nl-wallet-button::part(button) { … }` | `.wcb-button { … }` (or the `className` / `classes` props) |
+| `nl-wallet-button::part(button-span) { … }` | `.wcb-button__label { … }` |
+| `axios` peer dependency | none (uses `fetch`) |
+| `nbwallet` prop | use the `nb-wallet-connect-button-*` package; the prop still works here but warns and goes away in 3.0 |
+| a web component (`<nl-wallet-button>`) inside the component | native markup; the dialog is rendered into `<body>` |
+
+Everything else (props, events, the `onSuccess` payload, the iframe hand-over message, the backend proxy
+contract) is unchanged. The dialog can be themed with CSS custom properties on `.wcb-overlay`
+(`--primary-color`, `--primary-hover`, `--text-color`, …). Import `/slim` to leave out the embedded RO Sans
+fonts (about 140 KB).
 
 For further explanation and documentation, visit: https://wallet-connect.eu
-
-## Changes
-
-### 1.0.32
-- New `returnUrl` prop: where the wallet returns the user after a same-device disclosure (defaults to the page's own address, as before).
-- The button accepts a `wallet-connect-session` message with the `session_token` from the page named by `returnUrl`, so it works inside an iframe. See "Embedding in an iframe".
-
-### 1.0.25
-- Pass the `clientId` prop through to the embedded `<nl-wallet-button>` as `client-id`, so the "No app yet?" link under the QR code becomes `<help-base-url>?client_id=<clientId>` (employee onboarding hand-off).
-- NB Wallet (`nbwallet`) issuance deep links now use the https universal link base `https://nbwallet.org/deeplink/...` instead of the custom `businesswalletdebuginteraction://` scheme. Business Wallet and NL Wallet links are unchanged.

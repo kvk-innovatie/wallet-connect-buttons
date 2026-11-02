@@ -21,3 +21,14 @@ describe("translations", () => {
     expect(translations("nl", bw.translations)("retry")).toBe(translations("nl")("retry"))
   })
 })
+
+import en from "../src/i18n/en.json"
+import nl from "../src/i18n/nl.json"
+import { WORDS } from "../src/i18n/words"
+
+describe("word list", () => {
+  it("matches the keys of both dictionaries (regenerate with scripts/sync-from-wallet-web.sh)", () => {
+    expect([...WORDS]).toEqual(Object.keys(en).sort())
+    expect(Object.keys(nl).sort()).toEqual(Object.keys(en).sort())
+  })
+})

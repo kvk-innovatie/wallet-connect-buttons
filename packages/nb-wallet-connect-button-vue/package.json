@@ -1,0 +1,55 @@
+{
+  "name": "nb-wallet-connect-button-vue",
+  "version": "2.0.0",
+  "description": "Vue 3 component for NB Wallet (ZZP Garantie app) wallet connect",
+  "type": "module",
+  "license": "MIT",
+  "author": "Michiel Mayer",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/nb-wallet-connect-button-vue/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/nb-wallet-connect-button-vue/src/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./slim": {
+      "types": "./dist/nb-wallet-connect-button-vue/src/slim.d.ts",
+      "import": "./dist/slim.js",
+      "require": "./dist/slim.cjs"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "vite build && node ../../tooling/emit-types.mjs . --vue",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "keywords": [
+    "vue",
+    "vue3",
+    "wallet",
+    "wallet-connect",
+    "eudi",
+    "button"
+  ],
+  "peerDependencies": {
+    "vue": "^3.3.0"
+  },
+  "devDependencies": {
+    "@wallet-connect/core": "*",
+    "@wallet-connect/ui-vue": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kvk-innovatie/wallet-connect-buttons.git",
+    "directory": "packages/nb-wallet-connect-button-vue"
+  },
+  "homepage": "https://github.com/kvk-innovatie/wallet-connect-buttons/tree/main/packages/nb-wallet-connect-button-vue#readme",
+  "bugs": "https://github.com/kvk-innovatie/wallet-connect-buttons/issues"
+}

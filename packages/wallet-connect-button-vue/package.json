@@ -1,53 +1,55 @@
 {
   "name": "wallet-connect-button-vue",
-  "version": "1.0.37",
-  "description": "A Vue 3 component for NP Wallet integration",
+  "version": "2.0.0",
+  "description": "Vue 3 component for NP Wallet, Business Wallet and 18up wallet connect",
   "type": "module",
-  "main": "dist/index.js",
-  "module": "dist/index.esm.js",
-  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "author": "Michiel Mayer",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/wallet-connect-button-vue/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/wallet-connect-button-vue/src/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./slim": {
+      "types": "./dist/wallet-connect-button-vue/src/slim.d.ts",
+      "import": "./dist/slim.js",
+      "require": "./dist/slim.cjs"
+    },
+    "./style.css": "./dist/style.css"
+  },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
+  "sideEffects": false,
   "scripts": {
-    "build": "rollup -c",
-    "dev": "rollup -c -w",
-    "lint": "eslint src --ext .ts,.vue",
-    "typecheck": "tsc --noEmit"
+    "build": "vite build && node ../../tooling/emit-types.mjs . --vue",
+    "typecheck": "vue-tsc --noEmit"
   },
   "keywords": [
     "vue",
     "vue3",
-    "nl-wallet",
-    "component",
     "wallet",
+    "wallet-connect",
+    "eudi",
     "button"
   ],
-  "author": "Michiel Mayer",
-  "license": "MIT",
   "peerDependencies": {
-    "vue": "^3.0.0",
-    "axios": ">=1.0.0"
+    "vue": "^3.3.0"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.0",
-    "rollup-plugin-copy": "^3.5.0",
-    "@rollup/plugin-json": "^6.0.0",
-    "@rollup/plugin-node-resolve": "^15.0.0",
-    "@rollup/plugin-typescript": "^11.0.0",
-    "@vitejs/plugin-vue": "^5.0.0",
-    "vue": "^3.0.0",
-    "@vue/compiler-sfc": "^3.0.0",
-    "eslint": "^8.0.0",
-    "eslint-plugin-vue": "^9.0.0",
-    "rollup": "^4.0.0",
-    "typescript": "^5.0.0",
-    "tslib": "^2.0.0"
+    "@wallet-connect/core": "*",
+    "@wallet-connect/ui-vue": "*"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/kvk-innovatie/wallet-connect-buttons.git",
     "directory": "packages/wallet-connect-button-vue"
   },
-  "homepage": "https://github.com/kvk-innovatie/wallet-connect-buttons/tree/main/packages/wallet-connect-button-vue#readme"
+  "homepage": "https://github.com/kvk-innovatie/wallet-connect-buttons/tree/main/packages/wallet-connect-button-vue#readme",
+  "bugs": "https://github.com/kvk-innovatie/wallet-connect-buttons/issues"
 }

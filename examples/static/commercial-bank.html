@@ -4,12 +4,12 @@
     <title>Wallet Connect Example</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
-      nl-wallet-button::part(button) {
+      wallet-connect-button::part(button) {
         border-radius: 6px;
         padding: 12px 20px;
         margin: 4px;
       }
-      nl-wallet-button::part(button-span) {
+      wallet-connect-button::part(button-span) {
         font-weight: bold;
       }
     </style>
@@ -27,7 +27,7 @@
 
     <pre id="attributes-content"></pre>
 
-    <script src="https://cdn.jsdelivr.net/gh/kvk-innovatie/wallet-connect-button-vanillajs@v1.0.23/wallet-connect-button.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/wallet-connect-button-vanillajs@2/dist/wallet-connect-button.js"></script>
     <script>
       function handleSuccess(event) {
         let attributes = event.detail;

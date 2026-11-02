@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "vue": "^3.5.18",
-    "wallet-connect-button-vue": "*"
+    "wallet-connect-button-vue": "*",
+    "nb-wallet-connect-button-vue": "*"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.1",

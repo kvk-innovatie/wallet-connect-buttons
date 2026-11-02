@@ -1,39 +1,57 @@
 {
   "name": "wallet-connect-button-vanillajs",
-  "version": "1.0.38",
-  "description": "Vanilla JavaScript Web Component for NP Wallet Connect integration",
-  "main": "wallet-connect-button.js",
+  "version": "2.0.0",
+  "description": "Web component for NP Wallet, Business Wallet and 18up wallet connect",
+  "type": "module",
+  "license": "MIT",
+  "author": "Michiel Mayer",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/wallet-connect-button-vanillajs/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/wallet-connect-button-vanillajs/src/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./slim": {
+      "types": "./dist/wallet-connect-button-vanillajs/src/slim.d.ts",
+      "import": "./dist/slim.js",
+      "require": "./dist/slim.cjs"
+    },
+    "./style.css": "./dist/style.css",
+    "./cdn": "./dist/wallet-connect-button.js",
+    "./cdn/slim": "./dist/wallet-connect-button.slim.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node build.js",
-    "start": "node server.mjs",
-    "dev": "nodemon --watch src --watch build.js --watch server.mjs --ext js,mjs,html,css --exec \"npm run build && node server.mjs\"",
-    "dev:walletweb": "WALLET_WEB_JS=../../../business-wallet/wallet_web/dist/nl-wallet-web.js nodemon --watch src --watch build.js --watch server.mjs --watch ../../../business-wallet/wallet_web/dist/nl-wallet-web.js --ext js,mjs,html,css --exec \"npm run build && node server.mjs\""
+    "build": "vite build && node ../../tooling/emit-types.mjs . && vite build --mode cdn && vite build --mode cdn-slim",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
-    "wallet",
-    "connect",
     "web-component",
-    "javascript",
-    "nl-wallet"
+    "custom-element",
+    "wallet",
+    "wallet-connect",
+    "eudi",
+    "button"
   ],
-  "author": "",
-  "license": "MIT",
+  "peerDependencies": {},
+  "devDependencies": {
+    "@wallet-connect/core": "*",
+    "@wallet-connect/ui-vanilla": "*"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/kvk-innovatie/wallet-connect-buttons.git",
     "directory": "packages/wallet-connect-button-vanillajs"
   },
-  "files": [
-    "wallet-connect-button.js",
-    "README.md"
-  ],
-  "dependencies": {
-    "axios": "^1.6.0",
-    "express": "^4.18.0"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.14"
-  },
-  "homepage": "https://github.com/kvk-innovatie/wallet-connect-buttons/tree/main/packages/wallet-connect-button-vanillajs#readme"
+  "homepage": "https://github.com/kvk-innovatie/wallet-connect-buttons/tree/main/packages/wallet-connect-button-vanillajs#readme",
+  "bugs": "https://github.com/kvk-innovatie/wallet-connect-buttons/issues",
+  "jsdelivr": "./dist/wallet-connect-button.js",
+  "unpkg": "./dist/wallet-connect-button.js"
 }

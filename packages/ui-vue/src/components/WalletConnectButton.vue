@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
   WalletConnectController,
-  ensureFonts,
   ensureStyles,
   selectBrand,
   type SessionDriver,
@@ -59,7 +58,7 @@ watch(
 )
 onMounted(() => {
   ensureStyles(document)
-  if (props.config.fonts) ensureFonts(document)
+  props.config.fonts?.(document)
   mounted.value = true
   controller.value.mount()
 })

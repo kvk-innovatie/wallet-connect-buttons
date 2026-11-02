@@ -12,12 +12,12 @@ body {
   border-radius: 4px;
 }
 
-nl-wallet-button::part(button) {
+.wcb-button {
   border-radius: 6px;
   padding: 12px 20px;
   margin: 4px;
 }
 
-nl-wallet-button::part(button-span) {
+.wcb-button__label {
   font-weight: bold;
 }
