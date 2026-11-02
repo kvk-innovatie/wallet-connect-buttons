@@ -1,0 +1,8 @@
+{
+  "extends": "../core/tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "types": ["node"]
+  },
+  "include": ["src", "test", "../core/src/vite-env.d.ts"]
+}

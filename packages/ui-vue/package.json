@@ -1,0 +1,20 @@
+{
+  "name": "@wallet-connect/ui-vue",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Native Vue 3 components of the wallet-connect buttons (source only)",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@wallet-connect/core": "*"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0"
+  }
+}

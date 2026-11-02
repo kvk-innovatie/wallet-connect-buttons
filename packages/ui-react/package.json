@@ -1,0 +1,21 @@
+{
+  "name": "@wallet-connect/ui-react",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Native React components of the wallet-connect buttons (source only)",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@wallet-connect/core": "*"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  }
+}
