@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Wallet Connect Example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      nl-wallet-button::part(button) {
+        border-radius: 6px;
+        padding: 12px 20px;
+        margin: 4px;
+      }
+      nl-wallet-button::part(button-span) {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <wallet-connect-button
+        client-id="nlw_666374acd20dd169e3ae40abc8df0669"
+        api-key="3b37549ac9f421d39f4d991f04368cb87fe5e9ca0ac5e539e2e201b90cc5595a"
+        business
+        label="Share data with your business wallet"
+        lang="en"
+      />
+    </div>
+
+    <pre id="attributes-content"></pre>
+
+    <script src="https://cdn.jsdelivr.net/gh/kvk-innovatie/wallet-connect-button-vanillajs@v1.0.23/wallet-connect-button.js"></script>
+    <script>
+      function handleSuccess(event) {
+        let attributes = event.detail;
+        document.getElementById("attributes-content").textContent = JSON.stringify(attributes, null, 2);
+        wallet_button.style.display = "none";
+      }
+
+      function handleFailed(event) {
+        console.log("Something went wrong:", event.detail);
+      }
+
+      const wallet_button = document.getElementsByTagName("wallet-connect-button")[0];
+
+      wallet_button.addEventListener("success", handleSuccess, false);
+      wallet_button.addEventListener("failed", handleFailed, false);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.npmrc
+*.log
+.DS_Store
+examples/backend-python/venv/
+examples/*/backend-python/venv/

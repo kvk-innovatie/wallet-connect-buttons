@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Wallet Connect Issuance Example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      nl-wallet-button::part(button) {
+        border-radius: 6px;
+        padding: 12px 20px;
+        margin: 4px;
+      }
+      nl-wallet-button::part(button-span) {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <wallet-connect-button
+        issuance
+        client-id="nlw_7c511d4b3175d7d1751608625a79e9c5"
+        business
+        label="Add data to your business wallet"
+        help-base-url="https://example.com/"
+        lang="en"
+      />
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/gh/kvk-innovatie/wallet-connect-button-vanillajs@v1.0.20/wallet-connect-button.js"></script>
+  </body>
+</html>
