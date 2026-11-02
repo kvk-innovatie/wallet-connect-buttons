@@ -1,0 +1,392 @@
+<template>
+  <div v-if="loading" class="attributes">
+    <div class="verification-card">
+      <h2>Checking attributes...</h2>
+      <p>Please wait while we verify your attributes.</p>
+    </div>
+  </div>
+
+  <div v-else-if="error" class="attributes">
+    <div class="verification-card">
+      <h2>Error</h2>
+      <p>An error occurred while verifying your attributes: {{ error }}</p>
+    </div>
+  </div>
+
+  <!-- The inner button is a vendored wallet_web build: older copies know only
+       client-id, newer ones prefer service-id. Both carry the same value. -->
+  <nl-wallet-button
+    v-else
+    ref="buttonRef"
+    :text="props.label"
+    :usecase="props.issuance ? '' : clientId"
+    :client-id="clientId"
+    :service-id="clientId"
+    :start-url="startUrl"
+    :lang="props.lang"
+    :help-base-url="resolvedHelpBaseUrl"
+    :same-device-ul="sameDeviceUl"
+    :cross-device-ul="crossDeviceUl"
+    :business="props.business || undefined"
+    :over18="props.over18 || undefined"
+    :nbwallet="props.nbwallet || undefined"
+    :issuance="props.issuance || undefined"
+  ></nl-wallet-button>
+</template>
+
+<script setup>
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { useSearchParams } from './composables/useSearchParams';
+import axios from 'axios';
+
+// Types for credentials functionality
+const credentialsCache = new Map();
+
+const props = defineProps({
+  label: { type: String, required: false, default: 'Inloggen met NP Wallet' },
+  // Two names for the same value: `serviceId` is current (NB Wallet Connect
+  // calls it a service id), `clientId` is the original and still works.
+  // `serviceId` wins when both are given.
+  serviceId: { type: String, required: false },
+  clientId: { type: String, required: false },
+  onSuccess: { type: Function, required: false },
+  apiKey: { type: String, required: false },
+  useLocalWcServer: { type: Boolean, required: false, default: false },
+  business: { type: Boolean, required: false, default: false },
+  lang: { type: String, required: false, default: 'nl' },
+  helpBaseUrl: { type: String, required: false },
+  issuance: { type: Boolean, required: false },
+  over18: { type: Boolean, required: false, default: false },
+  nbwallet: { type: Boolean, required: false, default: false },
+  // Where the wallet app sends the user after a same-device disclosure; the
+  // verifier appends `session_token` to it. Defaults to the address of the
+  // document the button lives in, which is wrong inside an iframe: set it to
+  // the page that contains the iframe, and have that page hand the token to
+  // the iframe (see "Embedding in an iframe" in the README).
+  returnUrl: { type: String, required: false }
+});
+
+// `type` of the message a host page posts into the iframe to hand over a finished session.
+const SESSION_MESSAGE_TYPE = 'wallet-connect-session';
+
+// The full return URL: the explicit one resolved against this document, else this document.
+const resolvedReturnUrl = computed(() => {
+  if (typeof window === 'undefined') return '';
+  return props.returnUrl ? new URL(props.returnUrl, window.location.href).toString() : window.location.href;
+});
+
+// The session token and nonce out of a host page's message, or null when the
+// event is not such a message. Only the page the wallet returns to may hand
+// over a token, so the sender's origin must be the return URL's origin.
+const sessionFromMessage = (event) => {
+  const data = event.data;
+  if (!data || typeof data !== 'object' || data.type !== SESSION_MESSAGE_TYPE) return null;
+  if (typeof data.session_token !== 'string' || data.session_token === '') return null;
+  if (!resolvedReturnUrl.value || event.origin !== new URL(resolvedReturnUrl.value).origin) return null;
+  return { session_token: data.session_token, nonce: typeof data.nonce === 'string' ? data.nonce : undefined };
+};
+
+// Inside an iframe the wallet returns to the host page, not to this document.
+// The host page hands the token over by posting it in; from there on it is
+// handled exactly like a token in this document's own query string.
+const handleMessage = (event) => {
+  const session = sessionFromMessage(event);
+  if (!session) return;
+  setSearchParams(session.nonce ? session : { session_token: session.session_token });
+};
+
+// `serviceId` and `clientId` are two names for the same value.
+const clientId = computed(() => props.serviceId ?? props.clientId ?? '');
+// NB Wallet Connect renamed the identifier to "service id" across its API;
+// the other wallet-connect hosts still speak client id.
+const idParam = computed(() => (props.nbwallet ? 'service_id' : 'client_id'));
+const idPath = computed(() => (props.nbwallet ? 'service' : 'client'));
+
+const { searchParams, setSearchParams, removeSearchParam } = useSearchParams();
+const loading = ref(false);
+const error = ref(null);
+const buttonRef = ref(null);
+
+const getDefaultHost = () => {
+  // NB Wallet: nb-wallet-connect (connect.nbwallet.org); the issuance
+  // server has its own host.
+  if (props.nbwallet) {
+    if (props.useLocalWcServer) {
+      return props.issuance ? 'http://localhost:5017' : 'http://localhost:5021';
+    }
+    return props.issuance ? 'https://issuance.connect.nbwallet.org' : 'https://connect.nbwallet.org';
+  }
+
+  // If useLocalWcServer is set, use local server
+  if (props.useLocalWcServer) {
+    if (props.business) {
+      return props.issuance ? 'http://localhost:5017' : 'http://bw.localhost:5021';
+    }
+
+    return props.issuance ? 'http://localhost:5007' : 'http://localhost:5021';
+  }
+
+  // Otherwise use remote servers
+  if (props.business) {
+    return props.issuance ? 'https://bw.issuance.wallet-connect.eu' : 'https://bw.wallet-connect.eu';
+  }
+
+  return props.issuance ? 'https://issuance.wallet-connect.eu' : 'https://wallet-connect.eu';
+};
+
+const startUrl = computed(() => {
+  const startHost = props.apiKey ? getDefaultHost() : '';
+  return `${startHost}/api/create-session?lang=en&return_url=${encodeURIComponent(resolvedReturnUrl.value)}`;
+});
+
+const constructURI = (session_type) => {
+  const request_uri = `${getDefaultHost()}/disclosure/${clientId.value}/request_uri?session_type=${session_type}`;
+  const request_uri_method = "post";
+  const client_id_uri = `x509_san_dns:${new URL(getDefaultHost()).hostname}`;
+
+  const deepLinkScheme = props.nbwallet
+    ? 'https://nbwallet.org/deeplink'
+    : props.business
+    ? 'businesswalletdebuginteraction://ebwallet.org'
+    : 'walletdebuginteraction://wallet.edi.rijksoverheid.nl';
+
+  return `${deepLinkScheme}/disclosure_based_issuance?request_uri=${encodeURIComponent(
+    request_uri
+  )}&request_uri_method=${request_uri_method}&client_id=${client_id_uri}`;
+};
+
+// Disclosure uses the dynamic strategy — the modal creates the session and the
+// status response carries the universal link — so only issuance needs the
+// static same/cross-device links.
+const useStaticLinks = computed(() => props.issuance);
+const sameDeviceUl = computed(() => useStaticLinks.value ? constructURI("same_device") : undefined);
+const crossDeviceUl = computed(() => useStaticLinks.value ? constructURI("cross_device") : undefined);
+
+// Per-wallet-type help-base-url. An explicit helpBaseUrl prop wins; otherwise
+// fall back to the wallet's own help page (NP Wallet by default).
+const resolvedHelpBaseUrl = computed(() => {
+  if (props.helpBaseUrl) return props.helpBaseUrl;
+  if (props.nbwallet) return 'https://nbwallet.org/download';
+  if (props.over18) return 'https://18up.eu/nl/install/';
+  if (props.business) return 'https://ebwallet.org/download';
+  return 'https://npwallet.org/';
+});
+
+const fetchRequestedCredentials = async () => {
+  if (!props.apiKey || !clientId.value) return [];
+
+  const cacheKey = `${clientId.value}-${getDefaultHost()}`;
+
+  // Check if we already have data in cache
+  const cached = credentialsCache.get(cacheKey);
+  if (cached?.data) {
+    return cached.data;
+  }
+
+  // Check if there's already a request in progress
+  if (cached?.promise) {
+    return await cached.promise;
+  }
+
+  const fetchPromise = (async () => {
+    try {
+      const baseUrl = getDefaultHost();
+      const url = `${baseUrl}/api/${idPath.value}/${clientId.value}/requested-credentials`;
+      const headers = { 'Authorization': `Bearer ${props.apiKey}` };
+
+      const response = await axios.get(url, { headers });
+
+      // Extract credentials from the response
+      const credentials = response.data?.data?.requestedCredentials || [];
+
+      // Cache the result
+      credentialsCache.set(cacheKey, { data: credentials });
+      return credentials;
+    } catch (error) {
+      // Remove failed request from cache
+      credentialsCache.delete(cacheKey);
+      throw error;
+    }
+  })();
+
+  // Cache the promise to prevent duplicate requests
+  credentialsCache.set(cacheKey, { promise: fetchPromise });
+
+  return await fetchPromise;
+};
+
+const injectCredentialsIntoShadowDOM = (credentials, retryCount = 0) => {
+  const maxRetries = 10;
+  const walletButton = buttonRef.value;
+  
+  if (!walletButton || !walletButton.shadowRoot) {
+    return;
+  }
+
+  // Remove any existing credential info
+  const existingCredentials = walletButton.shadowRoot.querySelector('.required-credentials');
+  if (existingCredentials) {
+    existingCredentials.remove();
+  }
+
+  if (credentials.length === 0) return;
+
+  // Look for the modal and website section
+  const modal = walletButton.shadowRoot.querySelector('.modal');
+  if (!modal) {
+    // Retry if modal not found yet
+    if (retryCount < maxRetries) {
+      setTimeout(() => {
+        injectCredentialsIntoShadowDOM(credentials, retryCount + 1);
+      }, 200);
+      return;
+    }
+    return;
+  }
+
+  const websiteSection = modal.querySelector('.website');
+
+  // Determine language and translations
+  const isNL = props.lang === 'nl';
+  const headerText = isNL ? 'Benodigde Attestaties:' : 'Required Credentials:';
+  const getLinkText = isNL ? '→ Verkrijg attestatie' : '→ Get credential';
+
+  // Create credential info element
+  const credentialsDiv = document.createElement('div');
+  credentialsDiv.className = 'required-credentials';
+  credentialsDiv.innerHTML = `
+    <div style="
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 6px;
+      padding: 12px;
+      font-family: inherit;
+      font-size: 13px;
+      line-height: 1.4;
+    ">
+      <div style="margin: 0 0 8px 0; color: #212529; font-size: 14px; font-weight: 600;">${headerText}</div>
+      ${credentials.map(credential => {
+        const credentialName = isNL ? credential.credentialName.nl : credential.credentialName.en;
+        return `
+          <div style="margin-bottom: 6px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <span style="color: #495057; font-weight: 500;">${credentialName}</span>
+            ${credential.websiteUrl ? `
+              <a href="${credential.websiteUrl}" target="_blank" rel="noopener noreferrer" style="
+                color: #0066cc;
+                text-decoration: none;
+                font-size: 12px;
+                white-space: nowrap;
+              ">${getLinkText}</a>
+            ` : ''}
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+
+  // Insert the credentials div after the website section
+  if (websiteSection) {
+    websiteSection.insertAdjacentElement('afterend', credentialsDiv);
+  } else {
+    // Fallback: insert at the beginning of modal
+    modal.insertBefore(credentialsDiv, modal.firstChild);
+  }
+};
+
+const handleButtonClick = async (_event) => {
+  try {
+    const credentials = await fetchRequestedCredentials();
+    
+    if (credentials && credentials.length > 0) {
+      // Inject credentials into the shadow DOM with multiple attempts
+      setTimeout(() => {
+        injectCredentialsIntoShadowDOM(credentials);
+      }, 100);
+    }
+  } catch (error) {
+    console.error('Failed to fetch credentials:', error);
+  }
+};
+
+const handleSuccess = (e) => {
+  const customEvent = e;
+  if (customEvent.detail && customEvent.detail.length > 1) {
+    const session_token = customEvent.detail[0];
+    const session_type = customEvent.detail[1];
+
+    if (session_type === "cross_device") {
+      setSearchParams({ session_token });
+    }
+  }
+  console.log("Success event received:", customEvent.detail);
+};
+
+const handleFailed = (e) => {
+  const customEvent = e;
+  console.log("Failed event received:", customEvent.detail);
+};
+
+const loadWebComponent = async () => {
+  try {
+    await import("./nl-wallet-web.js");
+    const button = buttonRef.value;
+
+    if (button) {
+      button.addEventListener("success", handleSuccess);
+      button.addEventListener("failed", handleFailed);
+      button.addEventListener("click", handleButtonClick);
+    }
+  } catch (error) {
+    console.warn('Could not load nl-wallet-web.js:', error);
+  }
+};
+
+const fetchDisclosedAttributes = async () => {
+  const session_token = searchParams.value.get("session_token");
+  const nonce = searchParams.value.get("nonce");
+
+  if (!session_token) return;
+
+  loading.value = true;
+  const baseUrl = props.apiKey ? getDefaultHost() : "";
+  let url = baseUrl + `/api/disclosed-attributes?session_token=${session_token}&${idParam.value}=${clientId.value}`;
+  if (nonce) url = `${url}&nonce=${nonce}`;
+
+  const headers = props.apiKey ? { 'Authorization': `Bearer ${props.apiKey}` } : {};
+
+  try {
+    const { data } = await axios.get(url, { headers });
+    console.log("Disclosed attributes:", data);
+    if (props.onSuccess) {
+      props.onSuccess(data);
+    }
+    removeSearchParam('session_token');
+    if (nonce) removeSearchParam('nonce');
+    loading.value = false;
+  } catch (err) {
+    console.log(err.message);
+    error.value = err.message;
+    removeSearchParam('session_token');
+    if (nonce) removeSearchParam('nonce');
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('message', handleMessage);
+  loadWebComponent();
+  fetchDisclosedAttributes();
+});
+
+onUnmounted(() => {
+  window.removeEventListener('message', handleMessage);
+  const button = buttonRef.value;
+  if (button) {
+    button.removeEventListener("success", handleSuccess);
+    button.removeEventListener("failed", handleFailed);
+    button.removeEventListener("click", handleButtonClick);
+  }
+});
+
+watch(searchParams, fetchDisclosedAttributes, { deep: true });
+</script>
