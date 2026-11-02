@@ -30,7 +30,8 @@ cp "$WW/lib/l10n/en.json" "$WW/lib/l10n/nl.json" "$CORE/src/i18n/"
 cp "$WW/lib/util/qrcodegen.ts" "$CORE/src/qr/qrcodegen.ts"
 sed 's|from "@/util/qrcodegen"|from "./qrcodegen"|' "$WW/lib/util/draw_qr.ts" > "$CORE/src/qr/draw_qr.ts"
 cp "$WW/lib/models/openid4vc.ts" "$WW/lib/models/relying_party.ts" "$CORE/src/session/"
-cp "$WW/lib/non-free/fonts.ts" "$CORE/src/fonts/ro-sans.ts"
+# typed as string so the declarations do not inline the base64 literals
+sed -E 's/^export const (RO_SANS_[A-Z]+) =/export const \1: string =/' "$WW/lib/non-free/fonts.ts" > "$CORE/src/fonts/ro-sans.ts"
 node -e 'const fs=require("fs");const en=JSON.parse(fs.readFileSync(process.argv[1]+"/src/i18n/en.json","utf8"));const keys=Object.keys(en).sort();fs.writeFileSync(process.argv[1]+"/src/i18n/words.ts","// Generated from en.json by scripts/sync-from-wallet-web.sh; checked by test/translations.test.ts.\nexport const WORDS = [\n"+keys.map(k=>`  "${k}",`).join("\n")+"\n] as const\n\nexport type Word = (typeof WORDS)[number]\n")' "$CORE"
 echo "✅ copied l10n (+ words.ts), qrcodegen, draw_qr, models, fonts"
 
