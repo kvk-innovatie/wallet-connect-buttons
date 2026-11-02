@@ -5,7 +5,7 @@ import type { Brand } from "./types"
 export const up18: Brand = {
   id: "up18",
   name: "18up",
-  cssClass: "over18",
+  cssClass: "wcb-over18",
   translations: {
     en: {
       wallet_button_text: "Login with 18up",

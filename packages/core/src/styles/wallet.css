@@ -1,5 +1,7 @@
-/* Reset */
-*:not(style, svg, path, circle) {
+/* Reset: everything inside the overlay starts from the browser defaults, whether the
+   dialog lives in a shadow root (vanilla) or in the page (React, Vue). */
+.wcb-overlay,
+.wcb-overlay *:not(svg, path, circle) {
   all: revert;
   box-sizing: border-box;
   margin: 0;
@@ -9,28 +11,28 @@
   Josh's Custom CSS Reset
   https://www.joshwcomeau.com/css/custom-css-reset/
 */
-.modal-anchor *::before,
-.modal-anchor *::after {
+.wcb-overlay *::before,
+.wcb-overlay *::after {
   box-sizing: border-box;
 }
 
-.modal-anchor input,
-.modal-anchor button {
+.wcb-overlay input,
+.wcb-overlay button {
   font: inherit;
 }
 
-.modal-anchor p,
-.modal-anchor h1,
-.modal-anchor h2,
-.modal-anchor h3,
-.modal-anchor h4,
-.modal-anchor h5,
-.modal-anchor h6 {
+.wcb-overlay p,
+.wcb-overlay h1,
+.wcb-overlay h2,
+.wcb-overlay h3,
+.wcb-overlay h4,
+.wcb-overlay h5,
+.wcb-overlay h6 {
   overflow-wrap: break-word;
 }
 
 /* General */
-.modal-anchor {
+.wcb-overlay {
   --primary-color: #1e7a34;
   --primary-hover: #0e5a22;
   --secondary-hover: #f3f3f3;
@@ -58,33 +60,33 @@
   overscroll-behavior: contain;
 }
 
-.modal h1 {
+.wcb-modal h1 {
   font-size: 1rem;
   font-weight: 700;
   line-height: 1.5;
   letter-spacing: 0.15px;
 }
 
-.modal h2 {
+.wcb-modal h2 {
   font-size: 1.25rem;
   font-weight: 700;
   line-height: 1.5;
   letter-spacing: 0.15px;
 }
 
-.modal p {
+.wcb-modal p {
   line-height: 1.5rem;
   letter-spacing: 0.5px;
 }
 
-.modal a {
+.wcb-modal a {
   color: var(--primary-color);
   font-weight: 700;
   text-decoration: none;
 }
 
 /* Buttons */
-.modal .button {
+.wcb-modal .wcb-action {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -103,42 +105,42 @@
   cursor: pointer;
 }
 
-.modal .button.primary {
+.wcb-modal .wcb-action.wcb-primary {
   background-color: var(--primary-color);
   border: 1px solid var(--primary-color);
   color: white;
 }
 
-.modal .button.primary:hover {
+.wcb-modal .wcb-action.wcb-primary:hover {
   background-color: var(--primary-hover);
   border: 1px solid var(--primary-hover);
 }
 
-.modal .button.secondary {
+.wcb-modal .wcb-action.wcb-secondary {
   background-color: white;
   color: var(--primary-color);
   border: 1px solid var(--primary-color);
 }
 
-.modal .button.secondary:hover {
+.wcb-modal .wcb-action.wcb-secondary:hover {
   background-color: var(--secondary-hover);
   color: var(--primary-hover);
   border: 1px solid var(--primary-hover);
 }
 
-.modal .button.error {
+.wcb-modal .wcb-action.wcb-error {
   background-color: var(--error-color);
   border: 1px solid var(--error-color);
   color: white;
 }
 
-.modal .button.error:hover {
+.wcb-modal .wcb-action.wcb-error:hover {
   background-color: var(--error-hover);
   border: 1px solid var(--error-hover);
 }
 
-.modal .button:disabled,
-.modal .button.disabled {
+.wcb-modal .wcb-action:disabled,
+.wcb-modal .wcb-action.wcb-disabled {
   color: var(--secondary-hover);
   border-color: var(--secondary-hover);
 
@@ -148,7 +150,7 @@
 }
 
 /* Links */
-.modal .link {
+.wcb-modal .wcb-link {
   display: flex;
   width: fit-content;
   gap: 0.75rem;
@@ -160,26 +162,26 @@
   cursor: pointer;
 }
 
-.modal .button.link {
+.wcb-modal .wcb-action.wcb-link {
   width: 100%;
   background-color: white;
   border: 1px solid white;
   margin: 0;
 }
 
-.modal .link:hover {
+.wcb-modal .wcb-link:hover {
   text-decoration: underline;
   color: var(--primary-hover);
 }
 
-.modal .button.link:hover {
+.wcb-modal .wcb-action.wcb-link:hover {
   background-color: var(--secondary-hover);
   border: 1px solid var(--secondary-hover);
   color: var(--primary-hover);
   text-decoration: none;
 }
 
-.modal {
+.wcb-modal {
   display: flex;
   flex-direction: column;
   margin: auto;
@@ -202,7 +204,7 @@
   overflow: hidden;
 }
 
-.modal header {
+.wcb-modal header {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -213,11 +215,11 @@
 }
 
 /* Back arrow in the top-left corner of the header (install QR code screen) */
-.modal header {
+.wcb-modal header {
   position: relative;
 }
 
-.modal header .back {
+.wcb-modal header .wcb-back {
   position: absolute;
   left: 0.75rem;
   top: 50%;
@@ -237,13 +239,13 @@
   cursor: pointer;
 }
 
-.modal header .back:hover,
-.modal header .back:focus-visible {
+.wcb-modal header .wcb-back:hover,
+.wcb-modal header .wcb-back:focus-visible {
   background-color: var(--secondary-hover);
   color: var(--primary-hover);
 }
 
-.modal main {
+.wcb-modal main {
   display: flex;
   flex-grow: 1;
   flex-direction: column;
@@ -252,25 +254,25 @@
 
   padding: 2rem 1.5rem;
 }
-.modal main:focus {
+.wcb-modal main:focus {
   outline: none;
 }
 
-.modal.creating main,
-.modal.created main,
-.modal.loading main,
-.modal.in-progress main {
+.wcb-modal.wcb-creating main,
+.wcb-modal.wcb-created main,
+.wcb-modal.wcb-loading main,
+.wcb-modal.wcb-in-progress main {
   justify-content: normal;
 }
 
 /* The created screen also carries the download section below main, so it is
    the tallest one: keep it compact so it fits a laptop screen without scrolling. */
-.modal.created main {
+.wcb-modal.wcb-created main {
   gap: 1rem;
   padding: 1.5rem 1.5rem 1rem;
 }
 
-.modal.created .buttons {
+.wcb-modal.wcb-created .wcb-buttons {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -280,40 +282,40 @@
   width: 100%;
 }
 
-.modal.in-progress main {
+.wcb-modal.wcb-in-progress main {
   gap: 1rem;
 }
 
-.modal.creating main,
-.modal.created main,
-.modal.loading main,
-.modal.in-progress main,
-.modal.success.cross_device main {
+.wcb-modal.wcb-creating main,
+.wcb-modal.wcb-created main,
+.wcb-modal.wcb-loading main,
+.wcb-modal.wcb-in-progress main,
+.wcb-modal.wcb-success.wcb-cross_device main {
   align-items: center;
   text-align: center;
 }
 
-.modal.confirm-stop main,
-.modal.error main,
-.modal.success.same_device main {
+.wcb-modal.wcb-confirm-stop main,
+.wcb-modal.wcb-error main,
+.wcb-modal.wcb-success.wcb-same_device main {
   text-align: left;
   gap: 1.5rem;
 }
 
-.modal.in-progress svg.status,
-.modal.success.same_device svg.status {
+.wcb-modal.wcb-in-progress svg.wcb-status,
+.wcb-modal.wcb-success.wcb-same_device svg.wcb-status {
   color: var(--primary-color);
 }
 
-.modal.error svg.status {
+.wcb-modal.wcb-error svg.wcb-status {
   color: var(--error-color);
 }
 
-.modal.success svg.status {
+.wcb-modal.wcb-success svg.wcb-status {
   color: var(--success-color);
 }
 
-.modal footer {
+.wcb-modal footer {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -324,24 +326,24 @@
 }
 
 /* the whole footer is the button */
-.modal.created footer .button,
-.modal.success.cross_device footer .button {
+.wcb-modal.wcb-created footer .wcb-action,
+.wcb-modal.wcb-success.wcb-cross_device footer .wcb-action {
   border-radius: 0;
   padding: 1.5rem;
 }
 
 /* show the buttons separately */
-.modal.creating footer,
-.modal.loading footer,
-.modal.in-progress footer,
-.modal.confirm-stop footer,
-.modal.error footer,
-.modal.success.same_device footer {
+.wcb-modal.wcb-creating footer,
+.wcb-modal.wcb-loading footer,
+.wcb-modal.wcb-in-progress footer,
+.wcb-modal.wcb-confirm-stop footer,
+.wcb-modal.wcb-error footer,
+.wcb-modal.wcb-success.wcb-same_device footer {
   padding: 1.5rem;
   gap: 0.75rem;
 }
 
-.modal div.qr {
+.wcb-modal div.wcb-qr {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 1fr;
@@ -351,7 +353,7 @@
   width: 100%;
 }
 
-.modal div.qr canvas {
+.wcb-modal div.wcb-qr canvas {
   grid-area: 1 / 1;
 
   max-width: 17.5rem; /* 280px */
@@ -361,7 +363,7 @@
   image-rendering: pixelated;
 }
 
-.modal div.qr div.logo {
+.wcb-modal div.wcb-qr div.wcb-logo {
   grid-area: 1 / 1;
 
   height: 100%;
@@ -374,7 +376,7 @@
   z-index: 1055;
 }
 
-.modal section.website {
+.wcb-modal section.wcb-website {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -383,7 +385,7 @@
   padding: 1.5rem 1rem;
 }
 
-.modal section.download {
+.wcb-modal section.wcb-download {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -391,7 +393,7 @@
   padding: 0 1rem 1rem;
 }
 
-.modal section.download h3 {
+.wcb-modal section.wcb-download h3 {
   font-size: 1rem;
   font-weight: 700;
   line-height: 1.5;
@@ -399,19 +401,19 @@
   text-align: center;
 }
 
-.modal section.download .options {
+.wcb-modal section.wcb-download .wcb-options {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
 /* "I am an employee": a bare link under the director card, centred like the badge. */
-.modal section.download .employee {
+.wcb-modal section.wcb-download .wcb-employee {
   display: flex;
   justify-content: center;
 }
 
-.modal section.download .employee .link {
+.wcb-modal section.wcb-download .wcb-employee .wcb-link {
   margin: 0;
   padding: 0;
   border: 0;
@@ -422,7 +424,7 @@
   text-decoration: underline;
 }
 
-.modal section.download .option {
+.wcb-modal section.wcb-download .wcb-option {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -434,23 +436,23 @@
   background-color: var(--secondary-hover);
 }
 
-.modal section.download .option p {
+.wcb-modal section.wcb-download .wcb-option p {
   font-size: 0.875rem;
   line-height: 1.25rem;
   letter-spacing: 0.25px;
 }
 
-.modal section.download .option-title {
+.wcb-modal section.wcb-download .wcb-option-title {
   font-weight: 700;
 }
 
-.modal section.download .option .store-badge {
+.wcb-modal section.wcb-download .wcb-option .wcb-store-badge {
   align-self: center;
   margin-top: 0.25rem;
 }
 
 /* Store badges (the familiar black App Store / Google Play buttons) */
-.modal .store-badge {
+.wcb-modal .wcb-store-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
@@ -468,38 +470,38 @@
   transition: opacity 0.15s ease;
 }
 
-.modal .store-badge:hover {
+.wcb-modal .wcb-store-badge:hover {
   opacity: 0.85;
   text-decoration: none;
   color: #ffffff;
 }
 
-.modal .store-badge-icon {
+.wcb-modal .wcb-store-badge-icon {
   width: 1.5rem;
   height: 1.5rem;
   flex-shrink: 0;
 }
 
-.modal .store-badge-text {
+.wcb-modal .wcb-store-badge-text {
   display: flex;
   flex-direction: column;
   line-height: 1.15;
   text-align: left;
 }
 
-.modal .store-badge-text small {
+.wcb-modal .wcb-store-badge-text small {
   font-size: 0.625rem;
   font-weight: 400;
   letter-spacing: 0.02em;
 }
 
-.modal .store-badge-text strong {
+.wcb-modal .wcb-store-badge-text strong {
   font-size: 1rem;
   font-weight: 700;
 }
 
 /* Install screen: QR code of the onboarding link, to scan with the phone camera */
-.modal section.install {
+.wcb-modal section.wcb-install {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -509,7 +511,7 @@
 }
 
 /* Employee explanation above the install QR code (see InstallSection.vue). */
-.modal section.install .intro {
+.wcb-modal section.wcb-install .wcb-intro {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -518,40 +520,40 @@
   text-align: center;
 }
 
-.modal section.install .intro p {
+.wcb-modal section.wcb-install .wcb-intro p {
   font-size: 0.875rem;
   line-height: 1.25rem;
   letter-spacing: 0.25px;
 }
 
-.modal section.install .intro-title {
+.wcb-modal section.wcb-install .wcb-intro-title {
   font-weight: 700;
 }
 
-.modal.created.install footer {
+.wcb-modal.wcb-created.wcb-install footer {
   padding: 1.5rem;
 }
 
-.modal.created.install footer .button {
+.wcb-modal.wcb-created.wcb-install footer .wcb-action {
   border-radius: 0.75rem;
   padding: 1rem 1.5rem;
 }
 
-.modal section.text {
+.wcb-modal section.wcb-text {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
 /* Loading indicator */
-svg.loading-indicator {
-  animation: 2s linear infinite svg-animation;
+svg.wcb-loading-indicator {
+  animation: 2s linear infinite wcb-spin;
   padding: 1rem;
   width: 44px;
   max-width: 6.25rem; /* 100px */
 }
 
-@keyframes svg-animation {
+@keyframes wcb-spin {
   0% {
     transform: rotateZ(0deg);
   }
@@ -561,8 +563,8 @@ svg.loading-indicator {
   }
 }
 
-svg.loading-indicator circle {
-  animation: 1.4s ease-in-out infinite both circle-animation;
+svg.wcb-loading-indicator circle {
+  animation: 1.4s ease-in-out infinite both wcb-dash;
   display: block;
   fill: transparent;
   stroke: var(--primary-color);
@@ -572,7 +574,7 @@ svg.loading-indicator circle {
   transform-origin: 50% 50%;
 }
 
-@keyframes circle-animation {
+@keyframes wcb-dash {
   0%,
   25% {
     stroke-dashoffset: 280;
@@ -592,12 +594,12 @@ svg.loading-indicator circle {
 }
 
 /* Business Wallet variant */
-.modal-anchor.business {
+.wcb-overlay.wcb-business {
   --primary-color: #aa418c;
   --primary-hover: #7a2e65;
 }
 
-.modal-anchor.business .modal div.qr div.logo {
+.wcb-overlay.wcb-business .wcb-modal div.wcb-qr div.wcb-logo {
   background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MiIgaGVpZ2h0PSI3MiIgZmlsbD0ibm9uZSI+PHJlY3Qgd2lkdGg9IjYwLjIzNSIgaGVpZ2h0PSI2MC4yMzUiIHg9IjUuODgyIiB5PSI1Ljg4MiIgZmlsbD0ibm9uZSIgcng9IjExLjQ3MSIgc3R5bGU9ImRpc3BsYXk6aW5saW5lO2ZpbGw6I2ZmZjtmaWxsLW9wYWNpdHk6MDtmaWxsLXJ1bGU6ZXZlbm9kZDtzdHJva2U6I2ZmZjtzdHJva2Utd2lkdGg6MTEuNzY0NztzdHJva2UtbGluZWNhcDpidXR0O3N0cm9rZS1saW5lam9pbjpiZXZlbDtzdHJva2UtbWl0ZXJsaW1pdDoxMDtzdHJva2UtZGFzaGFycmF5Om5vbmU7c3Ryb2tlLW9wYWNpdHk6MTtwYWludC1vcmRlcjpzdHJva2UgZmlsbCBtYXJrZXJzIi8+PGcgY2xpcC1wYXRoPSJ1cmwoI2EpIiBzdHlsZT0iZGlzcGxheTppbmxpbmUiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDQgNCkiPjxwYXRoIGZpbGw9IiNmYWYwZjciIGQ9Ik0wIDE1LjM2QzAgNi44NzcgNi44NzcgMCAxNS4zNiAwaDMzLjI4QzU3LjEyMyAwIDY0IDYuODc3IDY0IDE1LjM2djMzLjI4QzY0IDU3LjEyMyA1Ny4xMjMgNjQgNDguNjQgNjRIMTUuMzZDNi44NzcgNjQgMCA1Ny4xMjMgMCA0OC42NFoiLz48ZyBmaWx0ZXI9InVybCgjYikiPjxwYXRoIGZpbGw9InVybCgjYykiIGQ9Ik0xMi44IDI2Ljg1OWMwLTIuODY4IDAtNC4zMDIuNTU4LTUuMzk3YTUuMTIgNS4xMiAwIDAgMSAyLjIzNy0yLjIzOGMxLjA5Ni0uNTU4IDIuNTMtLjU1OCA1LjM5Ny0uNTU4aDIyLjAxNmMyLjg2NyAwIDQuMyAwIDUuMzk2LjU1OGE1LjEyIDUuMTIgMCAwIDEgMi4yMzggMi4yMzhjLjU1OCAxLjA5NS41NTggMi41MjkuNTU4IDUuMzk3djEwLjQ5NWMwIDIuODY4IDAgNC4zMDItLjU1OCA1LjM5N2E1LjEyIDUuMTIgMCAwIDEtMi4yMzggMi4yMzdjLTEuMDk1LjU1OC0yLjUyOS41NTgtNS4zOTYuNTU4SDIwLjk5MmMtMi44NjggMC00LjMwMSAwLTUuMzk3LS41NThhNS4xMiA1LjEyIDAgMCAxLTIuMjM3LTIuMjM3Yy0uNTU4LTEuMDk1LS41NTgtMi41My0uNTU4LTUuMzk3WiIgc3R5bGU9ImZpbGw6dXJsKCNjKSIvPjxwYXRoIGZpbGw9IiNhYTQxOGMiIGZpbGwtb3BhY2l0eT0iLjUiIGQ9Ik0xMi44IDI2Ljg1OWMwLTIuODY4IDAtNC4zMDIuNTU4LTUuMzk3YTUuMTIgNS4xMiAwIDAgMSAyLjIzNy0yLjIzOGMxLjA5Ni0uNTU4IDIuNTMtLjU1OCA1LjM5Ny0uNTU4aDIyLjAxNmMyLjg2NyAwIDQuMyAwIDUuMzk2LjU1OGE1LjEyIDUuMTIgMCAwIDEgMi4yMzggMi4yMzhjLjU1OCAxLjA5NS41NTggMi41MjkuNTU4IDUuMzk3djEwLjQ5NWMwIDIuODY4IDAgNC4zMDItLjU1OCA1LjM5N2E1LjEyIDUuMTIgMCAwIDEtMi4yMzggMi4yMzdjLTEuMDk1LjU1OC0yLjUyOS41NTgtNS4zOTYuNTU4SDIwLjk5MmMtMi44NjggMC00LjMwMSAwLTUuMzk3LS41NThhNS4xMiA1LjEyIDAgMCAxLTIuMjM3LTIuMjM3Yy0uNTU4LTEuMDk1LS41NTgtMi41My0uNTU4LTUuMzk3WiIvPjwvZz48cGF0aCBmaWxsPSIjZmZmIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0yNS4yMiAxOC42NjdoOC45NjRsMi41MzcgNi45NzJjLjYyIDEuNy45MjkgMi41NTEuNTkzIDMuMjcycy0xLjE4NyAxLjAzLTIuODg4IDEuNjVsLS42OTguMjU0Yy0xLjcwMS42MTktMi41NTIuOTI4LTMuMjczLjU5Mi0uNzItLjMzNi0xLjAzLTEuMTg2LTEuNjUtMi44ODd6bTcuODk3IDkuNDIzYTEuNDA0IDEuNDA0IDAgMSAwLS45Ni0yLjYzOCAxLjQwNCAxLjQwNCAwIDAgMCAuOTYgMi42MzgiIGNsaXAtcnVsZT0iZXZlbm9kZCIvPjwvZz48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImMiIHgxPSIxMy45NyIgeDI9IjU1LjU0MyIgeTE9IjE4LjY2NiIgeTI9IjMxLjgyMiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiNhYTQxOGMiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNjMDYwYTAiLz48L2xpbmVhckdyYWRpZW50PjxjbGlwUGF0aCBpZD0iYSI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTAgMGg2NHY2NEgwWiIvPjwvY2xpcFBhdGg+PGZpbHRlciBpZD0iYiIgd2lkdGg9IjUzLjQiIGhlaWdodD0iNDEuODgiIHg9IjYuNTUiIHk9IjE0LjY2NiIgY29sb3ItaW50ZXJwb2xhdGlvbi1maWx0ZXJzPSJzUkdCIiBmaWx0ZXJVbml0cz0idXNlclNwYWNlT25Vc2UiPjxmZUZsb29kIGZsb29kLW9wYWNpdHk9IjAiIHJlc3VsdD0iQmFja2dyb3VuZEltYWdlRml4Ii8+PGZlQ29sb3JNYXRyaXggaW49IlNvdXJjZUFscGhhIiByZXN1bHQ9ImhhcmRBbHBoYSIgdmFsdWVzPSIwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAxMjcgMCIvPjxmZU9mZnNldCBkeD0iMS4yNSIgZHk9IjMuNSIvPjxmZUdhdXNzaWFuQmx1ciBzdGREZXZpYXRpb249IjMuNzUiLz48ZmVDb21wb3NpdGUgaW4yPSJoYXJkQWxwaGEiIG9wZXJhdG9yPSJvdXQiLz48ZmVDb2xvck1hdHJpeCB2YWx1ZXM9IjAgMCAwIDAgMC42NjcgMCAwIDAgMCAwLjI1NSAwIDAgMCAwIDAuNTQ5IDAgMCAwIDEgMCIvPjxmZUJsZW5kIGluMj0iQmFja2dyb3VuZEltYWdlRml4IiByZXN1bHQ9ImVmZmVjdDFfZHJvcFNoYWRvd18yMTcwM18yNjIyIi8+PGZlQmxlbmQgaW49IlNvdXJjZUdyYXBoaWMiIGluMj0iZWZmZWN0MV9kcm9wU2hhZG93XzIxNzAzXzI2MjIiIHJlc3VsdD0ic2hhcGUiLz48L2ZpbHRlcj48L2RlZnM+PC9zdmc+");
 }
 
@@ -605,7 +607,7 @@ svg.loading-indicator circle {
    app, in its palette (zzpgarantie.nl, wallet_app light theme: #19514c dark green for
    text and actions, light green tints). The QR code carries the ZZP Garantie diamond
    mark (wallet_app/assets/non-free/logos). */
-.modal-anchor.nbwallet {
+.wcb-overlay.wcb-nbwallet {
   --primary-color: #19514c;
   --primary-hover: #0f3732;
   --secondary-hover: #e9f5ed;
@@ -613,16 +615,56 @@ svg.loading-indicator circle {
   --spacer-color: #e3eae7;
 }
 
-.modal-anchor.nbwallet .modal div.qr div.logo {
+.wcb-overlay.wcb-nbwallet .wcb-modal div.wcb-qr div.wcb-logo {
   background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MiIgaGVpZ2h0PSI3MiIgZmlsbD0ibm9uZSI+PHJlY3Qgd2lkdGg9IjYwLjIzNSIgaGVpZ2h0PSI2MC4yMzUiIHg9IjUuODgyIiB5PSI1Ljg4MiIgcng9IjExLjQ3MSIgc3R5bGU9ImZpbGw6I2ZmZjtzdHJva2U6I2ZmZjtzdHJva2Utd2lkdGg6MTEuNzY0NztzdHJva2UtbGluZWpvaW46YmV2ZWw7cGFpbnQtb3JkZXI6c3Ryb2tlIGZpbGwgbWFya2VycyIvPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDkuMDAwIDkuMDAwKSBzY2FsZSgwLjEyMzI4KSI+PHBhdGggZD0iTTQyOC43NzMzLDI0MS4zNjMxbC0xODcuNDA2LDE4Ny40MTAyYy0xMi4zNDMzLDEyLjMzOTItMzIuMzU2MywxMi4zMzkyLTQ0LjY5OTYsMEw5LjI1NzUsMjQxLjM2MzFjLTEyLjM0MzMtMTIuMzQzMy0xMi4zNDMzLTMyLjM1NjMsMC00NC42OTU0TDE5Ni42Njc3LDkuMjU3NWMxMi4zNDMzLTEyLjM0MzMsMzIuMzUyMS0xMi4zNDMzLDQ0LjY5NTQsMGwxODcuNDEwMiwxODcuNDEwMWMxMi4zNDMzLDEyLjMzOTIsMTIuMzQzMywzMi4zNTIxLDAsNDQuNjk1NCIgZmlsbD0iIzFhNTI0YiIvPjxwYXRoIGQ9Ik0yMzguOTA0NywxNTkuMjg2di05Mi42NzM2bC0xOS45MTc5LTE5LjkxNzlMNDYuNjk3LDIxOC45ODQzbDE5LjkxNzksMTkuOTE3OSw0Ni4zMzcyLTQ2LjMzNnY5Mi42NzYxbC4wMDEtLjAwMSwxOS45MTc3LDE5LjkxNzcuMDAxNi0uMDAxNiw4Ni4xNzUxLDg2LjE3NTEsMjIuNDQ2OS0yMi40NDY5LTI0LjY3NDItMjQuNjcwMSwyOC4xNjE5LTI4LjE2MmMxMS4wMzM0LTExLjAzMzMsMTcuMTY5OS0yMi41ODc0LDE4LjQxMzgtMzQuNjY2Mi4yNDItMi4zNDk2LjI3MjctNC42NTA2LjEwNDctNi45MDYsMTEuOTE1OCw5LjIyODgsMjUuMDk3OCwxMy40MjQ5LDM5LjU1MjYsMTIuNTY2NSwxNy41Mjk0LTEuMDQ1NSwzMi44MzU2LTguMTAzNSw0NS45MTQ1LTIxLjE4MjQsMTMuMDM3NS0xMy4wMzc2LDE5Ljk5MjMtMjguMzkzNCwyMC44NTE4LTQ2LjA2NzQuODYzNi0xNy42Njk5LTUuNDI1Ny0zMy4yMjgxLTE4Ljg2NDEtNDYuNjcwNy0xLjM5NjctMS4zOTI2LTIuODE0MS0yLjcwMjUtNC4yNTYzLTMuOTQ2NGwtNTEuNTkyMyw1MS41OTY0LDE1LjE4NjQsMTUuMTg2NCwyNy4xNDU0LTI3LjE0MTJjMS4xNjUzLDMuNTA0MiwxLjcwMjUsNy4yMTUxLDEuNTk5MiwxMS4xMjg0LS4yMzk3LDkuMzg0Ni0zLjk1MDYsMTcuNjY5OS0xMS4xMzI2LDI0Ljg1MTktNy4yMTkyLDcuMjE5Mi0xNS41MzM1LDEwLjk3OTctMjQuOTQyOSwxMS4yODEzLTkuNDA1Mi4zMDE3LTE3LjY2MTYtMy4wOTkyLTI0Ljc2MS0xMC4xOTg2LTcuMTAzNS03LjA5OTQtMTAuNDYzMS0xNS4zNTU4LTEwLjA4MjktMjQuNzY1MS4zODAyLTkuNDA1Miw0LjE0NDgtMTcuNjgyMywxMS4yODU1LTI0LjgyM3MxNS4zNzY1LTEwLjg4MDUsMjQuNzAzMS0xMS4yMTk0YzEuMTYxMi0uMDQ1NCwyLjMwMTgtLjAyMDYsMy40Mjk5LjA1MzhsMjUuMTk5LTI1LjE5OTFjLTguODEwMS00LjI1MjEtMTguMzIyOC02LjA5OTMtMjguNTM4LTUuNTE2Ny0xMC4yNDgyLjU4MTUtMTkuNjgyNywzLjE2NzItMjguMzE0Niw3LjczMDZsMjkuMjc3NS0yOS4yNzc1LTE5LjkxNzktMTkuOTE3OS00Ni4zMzgxLDQ2LjMzNDhaTTE0MS4xMjIzLDI1Ny4wNzE4di05Mi42NzU3bDY5LjYxMjMtNjkuNjExOHY5Mi42NzE5bC02OS42MTIzLDY5LjYxNTZaTTIzMy4xODg1LDI4NC40NTc2Yy0uMzYzNiw0LjQ5Ni0yLjcwNjcsOC45MDUyLTcuMDQxNiwxMy4yNDAxbC0yNy45MjIyLDI3LjkyMjItMjMuNDY3Ni0yMy40NzE3LDI3Ljk4MDEtMjcuOTgwMWM0LjMzNDgtNC4zMzQ4LDguNzE1MS02LjY5MDIsMTMuMTQ5Mi03LjA3NDYsNC40MzQtLjM3Niw4LjUxNjcsMS4yOTc1LDEyLjI0ODIsNS4wMjkxLDMuNzI3NCwzLjczMTUsNS40MTM0LDcuODQzMiw1LjA1MzksMTIuMzM1MVpNMjQ1LjA0MTEsMTkyLjk4ODhjLTQuNTY5Niw4LjU3ODktNy4xOTQ3LDE3LjkxMzUtNy44NTMzLDI4LjAxMTctLjQzMjYsNi42MzM1LjIwMDMsMTIuOTkyMiwxLjg5MDksMTkuMDc4MS02LjQzOC0zLjMzNzYtMTMuMzE0MS00LjctMjAuNjM0NC00LjA2NDUtMTEuOTk2MiwxLjA0MTMtMjMuNjcwMSw3LjIzOTktMzUuMDIxNywxOC41OTU1bDYxLjYxODUtNjEuNjIwOVoiIGZpbGw9IiNmZmYiLz48cG9seWdvbiBwb2ludHM9IjE0MS4xMjIzIDI1Ny4wNzE0IDE0MS4xMjIzIDE2NC4zOTUyIDExMi45NTIxIDE5Mi41NjU0IDExMi45NTIxIDI4NS4yNDE2IDEzMi44NyAzMDUuMTU5NSAzMDUuMTU5OSAxMzIuODY5NiAyODUuMjQyIDExMi45NTE3IDE0MS4xMjIzIDI1Ny4wNzE0IiBmaWxsPSIjNmZiYzg1Ii8+PC9nPjwvc3ZnPg==");
 }
 
 /* 18up variant */
-.modal-anchor.over18 {
+.wcb-overlay.wcb-over18 {
   --primary-color: #5352e9;
   --primary-hover: #3a39c4;
 }
 
-.modal-anchor.over18 .modal div.qr div.logo {
+.wcb-overlay.wcb-over18 .wcb-modal div.wcb-qr div.wcb-logo {
   background-image: url("data:image/png;base64,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");
+}
+
+/* Credentials the registration asks for, listed under the help section of the created screen
+   (the 1.x wrappers injected this block into the dialog; now it is part of it). */
+.wcb-modal section.wcb-credentials {
+  margin: 0 1rem 1rem;
+  padding: 0.75rem;
+  border: 1px solid #e9ecef;
+  border-radius: 0.375rem;
+  background: #f8f9fa;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.wcb-modal section.wcb-credentials h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+.wcb-modal section.wcb-credentials .wcb-credential {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.375rem;
+}
+
+.wcb-modal section.wcb-credentials .wcb-credential span {
+  color: #495057;
+  font-weight: 500;
+}
+
+.wcb-modal section.wcb-credentials .wcb-credential a {
+  font-size: 0.75rem;
+  white-space: nowrap;
+  color: #0066cc;
+  font-weight: 400;
 }

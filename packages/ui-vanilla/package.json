@@ -1,0 +1,17 @@
+{
+  "name": "@wallet-connect/ui-vanilla",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Plain-DOM renderer and custom element factory for the wallet-connect buttons (source only)",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@wallet-connect/core": "*"
+  }
+}

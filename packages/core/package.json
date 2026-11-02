@@ -6,8 +6,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./styles/wallet.css": "./src/styles/wallet.css",
-    "./fonts": "./src/fonts/ro-sans.ts"
+    "./fonts": "./src/fonts/inject.ts",
+    "./styles/wallet.css": "./src/styles/wallet.css"
   },
   "scripts": {
     "test": "vitest run",

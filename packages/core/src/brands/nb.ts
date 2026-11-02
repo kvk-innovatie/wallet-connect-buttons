@@ -4,7 +4,7 @@ import type { Brand } from "./types"
 export const nb: Brand = {
   id: "nb",
   name: "ZZP Garantie app",
-  cssClass: "nbwallet",
+  cssClass: "wcb-nbwallet",
   translations: {
     en: {
       wallet_button_text: "Login with the ZZP Garantie app",

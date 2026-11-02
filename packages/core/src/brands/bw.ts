@@ -3,7 +3,7 @@ import type { Brand } from "./types"
 export const bw: Brand = {
   id: "bw",
   name: "Business Wallet",
-  cssClass: "business",
+  cssClass: "wcb-business",
   translations: {
     en: {
       wallet_button_text: "Login with Business Wallet",
