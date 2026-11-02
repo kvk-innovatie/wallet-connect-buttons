@@ -13,14 +13,21 @@
     "build": "npm run build --workspace packages/wallet-connect-button-react --workspace packages/wallet-connect-button-vue --workspace packages/wallet-connect-button-vanillajs",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "test": "npm test --workspaces --if-present",
+    "test": "vitest run",
     "dev:react": "npm run dev --workspace examples/react",
     "dev:vue": "npm run dev --workspace examples/vue",
     "dev:vanilla": "npm run dev --workspace packages/wallet-connect-button-vanillajs",
     "backend:node": "npm start --workspace examples/backends/nodejs",
-    "update-nl-wallet-web": "scripts/update-nl-wallet-web.sh"
+    "update-nl-wallet-web": "scripts/update-nl-wallet-web.sh",
+    "test:watch": "vitest"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "happy-dom": "^21.0.4",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.5"
   }
 }

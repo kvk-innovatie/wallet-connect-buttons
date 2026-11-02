@@ -1,0 +1,16 @@
+{
+  "name": "@wallet-connect/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Framework-agnostic core of the wallet-connect buttons (source only; bundled into the public packages)",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles/wallet.css": "./src/styles/wallet.css",
+    "./fonts": "./src/fonts/ro-sans.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  }
+}
