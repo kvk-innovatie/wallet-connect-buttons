@@ -1,0 +1,23 @@
+body {
+  margin: 0;
+  background-color: #ffffff;
+  color: #000000;
+  color-scheme: light;
+}
+
+#buttons div{
+  background-color: rgb(189 189 189 / 45%);
+  padding: 8px 18px;
+  border: 1px solid #ffffff63;
+  border-radius: 4px;
+}
+
+nl-wallet-button::part(button) {
+  border-radius: 6px;
+  padding: 12px 20px;
+  margin: 4px;
+}
+
+nl-wallet-button::part(button-span) {
+  font-weight: bold;
+}
