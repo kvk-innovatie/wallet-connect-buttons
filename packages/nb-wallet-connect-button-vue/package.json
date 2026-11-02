@@ -1,6 +1,6 @@
 {
   "name": "nb-wallet-connect-button-vue",
-  "version": "2.0.0",
+  "version": "2.0.0-dev",
   "description": "Vue 3 component for NB Wallet (ZZP Garantie app) wallet connect",
   "type": "module",
   "license": "MIT",
