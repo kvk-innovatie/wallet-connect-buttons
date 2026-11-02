@@ -55,7 +55,7 @@ export const createWalletConnectButton = (config: ButtonConfig) => {
 
     const controller = useMemo(() => {
       const flags = { business, over18, nbwallet }
-      if (nbwallet && !config.brands.nbwallet && config.nbwalletWarning && !warned) {
+      if (nbwallet && config.nbwalletWarning && !warned) {
         warned = true
         console.warn(config.nbwalletWarning)
       }

@@ -4,7 +4,6 @@ export type { Brand, BrandId } from "./types"
 export { np } from "./np"
 export { bw } from "./bw"
 export { up18 } from "./up18"
-export { nb } from "./nb"
 
 /** The boolean props the 1.x buttons used to pick a wallet. */
 export interface BrandFlags {
@@ -18,12 +17,11 @@ export interface BrandSet {
   default: Brand
   business?: Brand
   over18?: Brand
-  nbwallet?: Brand
 }
 
-/** The brand for a set of flags, with the same precedence the 1.x buttons had (nbwallet, over18, business). */
+/** The brand for a set of flags, with the 1.x precedence (over18 before business). `nbwallet` is accepted but has
+ * no brand here: the NB Wallet buttons live in nb-wallet-connect-buttons. */
 export const selectBrand = (brands: BrandSet, flags: BrandFlags): Brand => {
-  if (flags.nbwallet && brands.nbwallet) return brands.nbwallet
   if (flags.over18 && brands.over18) return brands.over18
   if (flags.business && brands.business) return brands.business
   return brands.default

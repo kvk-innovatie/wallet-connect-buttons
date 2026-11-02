@@ -117,7 +117,7 @@ export const defineWalletConnectButton = (
         over18: this.hasAttribute("over18"),
         nbwallet: this.hasAttribute("nbwallet"),
       }
-      if (flags.nbwallet && !brands.nbwallet && options.nbwalletWarning && !warned) {
+      if (flags.nbwallet && options.nbwalletWarning && !warned) {
         warned = true
         console.warn(options.nbwalletWarning)
       }

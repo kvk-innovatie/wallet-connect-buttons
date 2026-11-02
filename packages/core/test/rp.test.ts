@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { nb, np } from "../src/brands"
+import { bw, np } from "../src/brands"
 import { WalletConnectController } from "../src/rp/controller"
 import { disclosedAttributesUrl, fetchDisclosedAttributes } from "../src/rp/disclosed"
 import { SESSION_MESSAGE_TYPE, sessionFromMessage } from "../src/rp/iframe"
@@ -89,12 +89,12 @@ describe("WalletConnectController", () => {
   afterEach(() => vi.restoreAllMocks())
 
   it("derives label, host, help url and id names from the brand and options", () => {
-    const c = new WalletConnectController({ brand: nb, clientId: "EH_1", lang: "en", apiKey: "k" })
-    expect(c.label).toBe("Login with the ZZP Garantie app")
-    expect(c.host).toBe("https://connect.nbwallet.org")
-    expect(c.helpBaseUrl.toString()).toBe("https://nbwallet.org/download")
-    expect(c.startUrl.toString()).toBe("https://connect.nbwallet.org/api/create-session?lang=en&return_url=" + encodeURIComponent(window.location.href))
-    expect(c.showRoleBadges).toBe(true)
+    const c = new WalletConnectController({ brand: bw, clientId: "nlw_1", lang: "en", apiKey: "k" })
+    expect(c.label).toBe("Login with Business Wallet")
+    expect(c.host).toBe("https://bw.wallet-connect.eu")
+    expect(c.helpBaseUrl.toString()).toBe("https://ebwallet.org/download")
+    expect(c.startUrl.toString()).toBe("https://bw.wallet-connect.eu/api/create-session?lang=en&return_url=" + encodeURIComponent(window.location.href))
+    expect(c.showRoleBadges).toBe(false)
     expect(new WalletConnectController({ brand: np, clientId: "c", label: "Go" }).label).toBe("Go")
     expect(new WalletConnectController({ brand: np, clientId: "c" }).startUrl.pathname).toBe("/api/create-session")
   })
@@ -169,9 +169,9 @@ describe("WalletConnectController", () => {
     const credentials = [{ credentialKey: "k", credentialName: { en: "E", nl: "N" }, websiteUrl: "", vct: "v" }]
     const fetch = vi.fn().mockResolvedValue(json({ data: { requestedCredentials: credentials } }))
     expect(await new WalletConnectController({ brand: np, clientId: "c", fetch }).loadRequestedCredentials()).toEqual([])
-    const c = new WalletConnectController({ brand: nb, clientId: "s", apiKey: "k", fetch })
+    const c = new WalletConnectController({ brand: bw, clientId: "s", apiKey: "k", fetch })
     expect(await c.loadRequestedCredentials()).toEqual(credentials)
     expect(c.getState().credentials).toEqual(credentials)
-    expect(fetch.mock.calls[0][0]).toBe("https://connect.nbwallet.org/api/service/s/requested-credentials")
+    expect(fetch.mock.calls[0][0]).toBe("https://bw.wallet-connect.eu/api/client/s/requested-credentials")
   })
 })

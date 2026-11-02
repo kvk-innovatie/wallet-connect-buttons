@@ -12,7 +12,7 @@
     "examples/mock-wallet-connect"
   ],
   "scripts": {
-    "build": "npm run build -w packages/wallet-connect-button-react && npm run build -w packages/wallet-connect-button-vue && npm run build -w packages/wallet-connect-button-vanillajs && npm run build -w packages/nb-wallet-connect-button-react && npm run build -w packages/nb-wallet-connect-button-vue && npm run build -w packages/nb-wallet-connect-button-vanillajs",
+    "build": "npm run build -w packages/wallet-connect-button-react && npm run build -w packages/wallet-connect-button-vue && npm run build -w packages/wallet-connect-button-vanillajs",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "vitest run",
     "test:watch": "vitest",

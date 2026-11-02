@@ -21,7 +21,7 @@ const props = defineProps({
 
 const controller = computed(() => {
   const flags = { business: props.business, over18: props.over18, nbwallet: props.nbwallet }
-  if (flags.nbwallet && !props.config.brands.nbwallet && props.config.nbwalletWarning && !warnedConfigs.has(props.config)) {
+  if (flags.nbwallet && props.config.nbwalletWarning && !warnedConfigs.has(props.config)) {
     warnedConfigs.add(props.config)
     console.warn(props.config.nbwalletWarning)
   }

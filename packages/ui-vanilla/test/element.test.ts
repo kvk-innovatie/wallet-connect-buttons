@@ -1,4 +1,4 @@
-import { bw, nb, np, up18 } from "@wallet-connect/core"
+import { bw, np, up18 } from "@wallet-connect/core"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { defineWalletConnectButton } from "../src/element"
 
@@ -18,7 +18,6 @@ const fakeServer = (status: () => unknown = () => ({ status: "CREATED", ul: "wal
 const brands = { default: np, business: bw, over18: up18 }
 const fetch = fakeServer()
 defineWalletConnectButton("wallet-connect-button", brands, { fetch, nbwalletWarning: "use nb-wallet-connect-button" })
-defineWalletConnectButton("nb-wallet-connect-button", { default: nb }, { fetch })
 
 const mount = (html: string) => {
   document.body.innerHTML = html
@@ -118,22 +117,6 @@ describe("<wallet-connect-button>", () => {
     expect(() => defineWalletConnectButton("wallet-connect-button", brands)).not.toThrow()
   })
 
-  it("renders the NB brand with download badges per role", async () => {
-    const el = mount(`<nb-wallet-connect-button service-id="EH_1" api-key="k"></nb-wallet-connect-button>`)
-    expect(inShadow(el, ".wcb-button__label")!.textContent).toBe("Inloggen met de ZZP Garantie app")
-    click(inShadow(el, "[part=button]"))
-    await vi.waitFor(() => expect(inShadow(el, "[data-testid=qr]")).not.toBeNull())
-    expect(inShadow(el, ".wcb-overlay")!.className).toContain("wcb-nbwallet")
-    expect(inShadow(el, "[data-testid=download_director_badge]")).not.toBeNull()
-    expect(inShadow(el, "[data-testid=download_employee_link]")).not.toBeNull()
-    // a desktop badge opens the install QR code instead of a store
-    click(inShadow(el, "[data-testid=download_director_badge]"))
-    expect(inShadow(el, "[data-testid=install_section]")!.getAttribute("data-role")).toBe("director")
-    expect(inShadow(el, "[data-testid=installed_button]")).not.toBeNull()
-    click(inShadow(el, "[data-testid=back_header_button]"))
-    expect(inShadow(el, "[data-testid=install_section]")).toBeNull()
-    expect(fetch.mock.calls.some(([url]) => url === "https://connect.nbwallet.org/api/service/EH_1/requested-credentials")).toBe(true)
-  })
 
   it("shows the static issuance links without creating a session", async () => {
     const el = mount(`<wallet-connect-button client-id="c" issuance business></wallet-connect-button>`)

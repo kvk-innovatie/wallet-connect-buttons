@@ -59,16 +59,6 @@
             />
           </div>
           <div>
-            <h3>With your NB Wallet (ZZP Garantie app)</h3>
-            <NbWalletConnectButton
-              serviceId="EH_A91C4D2F6B30E785"
-              apiKey="f1e2720e399ccf3f61741212068c629fb8fd845526ce004b192e2a6f7b43fdea"
-              label="Share data with your NB Wallet"
-              lang="en"
-              @success="handleSuccess"
-            />
-          </div>
-          <div>
             <h3>With 18up wallet</h3>
             <WalletConnectButton
               over18
@@ -143,7 +133,6 @@
 <script setup>
 import { ref } from "vue";
 import WalletConnectButton from "wallet-connect-button-vue";
-import NbWalletConnectButton from "nb-wallet-connect-button-vue";
 
 const attributes = ref(null);
 

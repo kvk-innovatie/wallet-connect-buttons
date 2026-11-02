@@ -1,4 +1,4 @@
-import { bw, nb, np, up18 } from "@wallet-connect/core"
+import { bw, np, up18 } from "@wallet-connect/core"
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { createWalletConnectButton } from "../src"
@@ -17,7 +17,6 @@ const fakeServer = (status: () => unknown = () => ({ status: "CREATED", ul: "wal
 
 const fetch = fakeServer()
 const Button = createWalletConnectButton({ brands: { default: np, business: bw, over18: up18 }, fetch, nbwalletWarning: "use nb-wallet-connect-button-react" })
-const NbButton = createWalletConnectButton({ brands: { default: nb }, fetch })
 
 const modal = () => document.body.querySelector<HTMLElement>("[data-testid=wallet_modal]")
 const byTestId = (id: string) => document.body.querySelector<HTMLElement>(`[data-testid=${id}]`)
@@ -98,18 +97,6 @@ describe("WalletConnectButton (React)", () => {
     expect(onFailed).toHaveBeenCalledWith({ kind: "failed", sessionToken: "abc", sessionType: "cross_device" })
   })
 
-  it("renders the NB brand with download badges and the install qr code", async () => {
-    render(<NbButton serviceId="EH_1" apiKey="k" />)
-    expect(screen.getByTestId("wallet_button").textContent).toBe("Inloggen met de ZZP Garantie app")
-    fireEvent.click(screen.getByTestId("wallet_button"))
-    await waitFor(() => expect(byTestId("qr")).not.toBeNull())
-    expect(document.body.querySelector(".wcb-overlay")!.className).toContain("wcb-nbwallet")
-    fireEvent.click(byTestId("download_director_badge")!)
-    expect(byTestId("install_section")!.getAttribute("data-role")).toBe("director")
-    fireEvent.click(byTestId("back_header_button")!)
-    expect(byTestId("install_section")).toBeNull()
-    expect(fetch.mock.calls.some(([url]) => url === "https://connect.nbwallet.org/api/service/EH_1/requested-credentials")).toBe(true)
-  })
 
   it("shows static issuance links without a session", async () => {
     render(<Button clientId="c" issuance business />)

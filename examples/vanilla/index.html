@@ -15,14 +15,12 @@
         border: 1px solid #ffffff63;
         border-radius: 4px;
       }
-      wallet-connect-button::part(button),
-      nb-wallet-connect-button::part(button) {
+      wallet-connect-button::part(button) {
         border-radius: 6px;
         padding: 12px 20px;
         margin: 4px;
       }
-      wallet-connect-button::part(button-span),
-      nb-wallet-connect-button::part(button-span) {
+      wallet-connect-button::part(button-span) {
         font-weight: bold;
       }
     </style>
@@ -31,15 +29,6 @@
     <div id="buttons">
     <div>
       <h1>Share data with your wallet</h1>
-      <div>
-        <h2>nb wallet</h2>
-        <nb-wallet-connect-button
-          service-id="EH_A91C4D2F6B30E785"
-          api-key="f1e2720e399ccf3f61741212068c629fb8fd845526ce004b192e2a6f7b43fdea"
-          label="Share data with your wallet (quick and easy, only frontend)"
-          lang="en"
-        ></nb-wallet-connect-button>
-      </div>
       <div>
         <h2>Using local Wallet-Connect server</h2>
         <div>
@@ -160,7 +149,6 @@
     <pre id="attributes-content"></pre>
 
     <script src="/packages/wallet-connect-button-vanillajs/dist/wallet-connect-button.js"></script>
-    <script src="/packages/nb-wallet-connect-button-vanillajs/dist/nb-wallet-connect-button.js"></script>
     <!-- <script src="https://cdn.jsdelivr.net/gh/kvk-innovatie/wallet-connect-button-vanillajs@v1.0.38/wallet-connect-button.js"></script> -->
     <script>
       function handleSuccess(event) {
@@ -175,7 +163,7 @@
         console.log("Something went wrong:", event.detail);
       }
 
-      const wallet_buttons = document.querySelectorAll("wallet-connect-button, nb-wallet-connect-button");
+      const wallet_buttons = document.querySelectorAll("wallet-connect-button");
 
       Array.from(wallet_buttons).forEach((button) => {
         button.addEventListener("success", handleSuccess, false);

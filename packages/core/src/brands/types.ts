@@ -1,7 +1,7 @@
 import type { StoreLinks } from "../store_links"
 import type { DictionaryOverrides, Language } from "../translations"
 
-export type BrandId = "np" | "bw" | "up18" | "nb"
+export type BrandId = "np" | "bw" | "up18"
 
 /** Everything that differs between the wallets a button can talk to. */
 export interface Brand {

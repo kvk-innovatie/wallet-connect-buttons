@@ -1,4 +1,4 @@
-import { bw, nb, np, up18 } from "@wallet-connect/core"
+import { bw, np, up18 } from "@wallet-connect/core"
 import { flushPromises, mount } from "@vue/test-utils"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { nextTick } from "vue"
@@ -18,7 +18,6 @@ const fakeServer = (status: () => unknown = () => ({ status: "CREATED", ul: "wal
 
 const fetch = fakeServer()
 const Button = createWalletConnectButton({ brands: { default: np, business: bw, over18: up18 }, fetch, nbwalletWarning: "use nb-wallet-connect-button-vue" })
-const NbButton = createWalletConnectButton({ brands: { default: nb }, fetch })
 
 const inBody = (selector: string) => document.body.querySelector<HTMLElement>(selector)
 const click = (el: Element | null) => el!.dispatchEvent(new MouseEvent("click", { bubbles: true }))
@@ -108,22 +107,6 @@ describe("WalletConnectButton (Vue)", () => {
     w.unmount()
   })
 
-  it("renders the NB brand with download badges and the install qr code", async () => {
-    const w = mount(NbButton, { props: { serviceId: "EH_1", apiKey: "k" }, attachTo: document.body })
-    expect(w.get(".wcb-button__label").text()).toBe("Inloggen met de ZZP Garantie app")
-    await w.get("button").trigger("click")
-    await vi.waitFor(() => expect(inBody("[data-testid=qr]")).not.toBeNull())
-    expect(inBody(".wcb-overlay")!.className).toContain("wcb-nbwallet")
-    expect(inBody("[data-testid=download_director_badge]")).not.toBeNull()
-    click(inBody("[data-testid=download_director_badge]"))
-    await flushPromises()
-    expect(inBody("[data-testid=install_section]")!.getAttribute("data-role")).toBe("director")
-    click(inBody("[data-testid=back_header_button]"))
-    await flushPromises()
-    expect(inBody("[data-testid=install_section]")).toBeNull()
-    expect(fetch.mock.calls.some(([url]) => url === "https://connect.nbwallet.org/api/service/EH_1/requested-credentials")).toBe(true)
-    w.unmount()
-  })
 
   it("shows static issuance links without a session", async () => {
     const w = mount(Button, { props: { clientId: "c", issuance: true, business: true }, attachTo: document.body })

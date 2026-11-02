@@ -1,7 +1,7 @@
 # Changelog
 
-All six packages (`wallet-connect-button-{react,vue,vanillajs}`, `nb-wallet-connect-button-{react,vue,vanillajs}`)
-share one version.
+The three packages (`wallet-connect-button-{react,vue,vanillajs}`) share one version. The NB Wallet packages are
+released from the nb-wallet-connect-buttons repository.
 
 ## 2.0.0
 
