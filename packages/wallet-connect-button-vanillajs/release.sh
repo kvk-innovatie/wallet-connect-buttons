@@ -1,43 +1,10 @@
 #!/bin/bash
-
-# Build the project
-echo "🔨 Building project..."
-npm run build
-
-# Copy built file to root for CDN release
-echo "📦 Copying wallet-connect-button.js to root for CDN..."
-cp ./public/wallet-connect-button.js ./wallet-connect-button.js
-
-# Increment patch version in package.json
-echo "📈 Incrementing patch version..."
-npm version patch --no-git-tag-version
-
-# Get new version from package.json
-VERSION=$(node -p "require('./package.json').version")
-
-echo "📦 Creating release v$VERSION..."
-
-# Update version in src/index.html
-echo "🔄 Updating version in src/index.html..."
-sed -i.bak "s|@v[0-9]*\.[0-9]*\.[0-9]*|@v$VERSION|g" src/index.html && rm src/index.html.bak
-
-# Update version in README.md
-echo "🔄 Updating version in README.md..."
-sed -i.bak "s|@v[0-9]*\.[0-9]*\.[0-9]*|@v$VERSION|g" README.md && rm README.md.bak
-
-# Add all changes
-git add .
-
-# Commit changes
-git commit -m "Release v$VERSION"
-
-# Create tag
-git tag "v$VERSION"
-
-# Push changes and tags
-git push origin main
-git push origin "v$VERSION"
-
-echo "✅ Release v$VERSION created successfully!"
-echo "🌐 CDN URL: https://cdn.jsdelivr.net/gh/kvk-innovatie/wallet-connect-button-vanillajs@v$VERSION/wallet-connect-button.js"
-echo "⏰ Cache: 1 year (immutable)"
+# 1.x vanilla releases are served by jsDelivr from GitHub tags of the ORIGINAL
+# repository (github.com/kvk-innovatie/wallet-connect-button-vanillajs). Tags in
+# this monorepo do not reach that CDN URL, and the old script's `git add .` /
+# `git push origin main` would act on the whole monorepo.
+#
+# Until 2.0 moves the vanilla button to npm (scripts/release.sh at the repo
+# root), publish 1.x hotfixes from a checkout of the original repository.
+echo "❌ release.sh is disabled inside the monorepo; see the comment at the top of this file." >&2
+exit 1

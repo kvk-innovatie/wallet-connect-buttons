@@ -36,8 +36,8 @@ export default {
     json(),
     copy({
       targets: [
-        { src: 'src/nl-wallet-web.js', dest: 'dist' },
-        { src: 'src/nl-wallet-web.d.ts', dest: 'dist' }
+        { src: '../../vendor/nl-wallet-web.js', dest: 'dist' },
+        { src: '../../vendor/nl-wallet-web.d.ts', dest: 'dist' }
       ]
     }),
     typescript({

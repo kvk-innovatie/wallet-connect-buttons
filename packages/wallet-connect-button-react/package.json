@@ -46,7 +46,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/kvk-innovatie/wallet-connect-button-react.git"
+    "url": "https://github.com/kvk-innovatie/wallet-connect-buttons.git",
+    "directory": "packages/wallet-connect-button-react"
   },
-  "homepage": "https://github.com/kvk-innovatie/wallet-connect-button-react"
+  "homepage": "https://github.com/kvk-innovatie/wallet-connect-buttons/tree/main/packages/wallet-connect-button-react#readme"
 }

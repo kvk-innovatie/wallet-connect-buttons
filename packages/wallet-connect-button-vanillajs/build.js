@@ -30,16 +30,17 @@ combinedContent += `/**
 
 `;
 
-// Allow pointing nl-wallet-web.js at an external build (e.g. the wallet_web
-// dist in the business-wallet repo) via WALLET_WEB_JS, instead of the committed
-// src/ copy. Defaults to src/nl-wallet-web.js so normal builds are unaffected.
+// nl-wallet-web.js is the single vendored wallet_web build shared by all button
+// packages (vendor/ at the repo root). WALLET_WEB_JS points the build at another
+// copy, e.g. the wallet_web dist in the business-wallet repo.
 const nlWalletWebOverride = process.env.WALLET_WEB_JS;
+const vendoredNlWalletWeb = path.join(__dirname, "..", "..", "vendor", "nl-wallet-web.js");
 
 // Process each source file
 for (const filename of sourceFiles) {
   const filePath =
-    filename === 'nl-wallet-web.js' && nlWalletWebOverride
-      ? nlWalletWebOverride
+    filename === 'nl-wallet-web.js'
+      ? (nlWalletWebOverride || vendoredNlWalletWeb)
       : path.join(srcDir, filename);
 
   if (!fs.existsSync(filePath)) {
@@ -74,8 +75,9 @@ for (const filename of sourceFiles) {
   combinedContent += '\n\n';
 }
 
-// Copy index.html to public folder
+// Copy index.html to public folder (public/ is build output and may not exist yet)
 try {
+  fs.mkdirSync('./public', { recursive: true });
   if (fs.existsSync(indexHtmlSrc)) {
     fs.copyFileSync(indexHtmlSrc, indexHtmlDest);
     console.log(`✅ Copied index.html to public folder`);

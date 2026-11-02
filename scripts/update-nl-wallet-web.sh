@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
 # Build the wallet_web lib in the business-wallet repo and copy the generated
-# nl-wallet-web.js into the vanillajs, react, and vue button src/ folders here.
+# nl-wallet-web.js to vendor/nl-wallet-web.js, the single copy all button
+# packages build from.
 #
 # Usage:
 #   scripts/update-nl-wallet-web.sh [path-to-wallet_web]
@@ -36,11 +37,9 @@ WALLET_WEB_DIR="$(cd "$WALLET_WEB_DIR" && pwd)"  # normalize to absolute
 
 ARTIFACT="$WALLET_WEB_DIR/dist/nl-wallet-web.js"
 
-# Destination src/ folders in this repo.
+# The one vendored copy every button package builds from.
 DESTS=(
-  "$REPO_ROOT/vanillajs/wallet-connect-button-vanillajs/src"
-  "$REPO_ROOT/react/wallet-connect-button-react/src"
-  "$REPO_ROOT/vue/wallet-connect-button-vue/src"
+  "$REPO_ROOT/vendor"
 )
 
 echo "📁 wallet_web:   $WALLET_WEB_DIR"

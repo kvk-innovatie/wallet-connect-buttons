@@ -21,7 +21,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/kvk-innovatie/wallet-connect-button-vanillajs.git"
+    "url": "https://github.com/kvk-innovatie/wallet-connect-buttons.git",
+    "directory": "packages/wallet-connect-button-vanillajs"
   },
   "files": [
     "wallet-connect-button.js",
@@ -33,5 +34,6 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
-  }
+  },
+  "homepage": "https://github.com/kvk-innovatie/wallet-connect-buttons/tree/main/packages/wallet-connect-button-vanillajs#readme"
 }

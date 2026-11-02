@@ -43,12 +43,12 @@ echo "✅ Successfully published version $NEW_VERSION to npm!"
 # If in git repo, commit and tag the version bump
 if [ -d .git ]; then
     echo "📝 Committing version bump..."
-    git add package.json
-    git add package-lock.json
-    git commit -m "Bump version to $NEW_VERSION"
-    git tag "v$NEW_VERSION"
+    # The lockfile lives at the monorepo root; tags are prefixed per package.
+    git add package.json ../../package-lock.json
+    git commit -m "Bump react version to $NEW_VERSION"
+    git tag "react-v$NEW_VERSION"
     
-    echo "🏷️  Created git tag v$NEW_VERSION"
+    echo "🏷️  Created git tag react-v$NEW_VERSION"
     echo "💡 Don't forget to push the changes and tags:"
     echo "   git push && git push --tags"
 fi

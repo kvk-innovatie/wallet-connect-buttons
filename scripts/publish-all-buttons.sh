@@ -3,13 +3,13 @@
 # Publish all wallet-connect button libraries by invoking each folder's own
 # release/publish script:
 #
-#   vanillajs -> vanillajs/wallet-connect-button-vanillajs/release.sh
-#                  (builds, bumps patch, commits, tags, and GIT PUSHes to main
-#                   for the jsDelivr CDN release)
-#   react     -> react/wallet-connect-button-react/publish.sh
+#   vanillajs -> packages/wallet-connect-button-vanillajs/release.sh
+#                  (DISABLED in the monorepo: 1.x jsDelivr releases come from
+#                   the original GitHub repo; 2.0 moves vanilla to npm)
+#   react     -> packages/wallet-connect-button-react/publish.sh
 #                  (requires a clean git tree, builds, bumps patch, NPM PUBLISH,
 #                   commits + tags locally)
-#   vue       -> vue/wallet-connect-button-vue/publish.sh   (same as react)
+#   vue       -> packages/wallet-connect-button-vue/publish.sh   (same as react)
 #
 # ⚠️  These are real, outward-facing, hard-to-undo actions (npm publish / git
 #     push / version bumps). Review before running.
@@ -32,9 +32,9 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # --- Target registry: key -> "relative-dir|script-name" --------------------
 target_spec() {
   case "$1" in
-    vanillajs) echo "vanillajs/wallet-connect-button-vanillajs|release.sh" ;;
-    react)     echo "react/wallet-connect-button-react|publish.sh" ;;
-    vue)       echo "vue/wallet-connect-button-vue|publish.sh" ;;
+    vanillajs) echo "packages/wallet-connect-button-vanillajs|release.sh" ;;
+    react)     echo "packages/wallet-connect-button-react|publish.sh" ;;
+    vue)       echo "packages/wallet-connect-button-vue|publish.sh" ;;
     *)         return 1 ;;
   esac
 }

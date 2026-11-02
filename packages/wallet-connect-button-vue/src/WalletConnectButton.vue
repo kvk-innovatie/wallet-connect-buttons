@@ -328,7 +328,7 @@ const handleFailed = (e) => {
 
 const loadWebComponent = async () => {
   try {
-    await import("./nl-wallet-web.js");
+    await import("../../../vendor/nl-wallet-web.js");
     const button = buttonRef.value;
 
     if (button) {

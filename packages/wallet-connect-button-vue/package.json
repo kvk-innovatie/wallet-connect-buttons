@@ -46,7 +46,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/kvk-innovatie/wallet-connect-button-vue.git"
+    "url": "https://github.com/kvk-innovatie/wallet-connect-buttons.git",
+    "directory": "packages/wallet-connect-button-vue"
   },
-  "homepage": "https://github.com/kvk-innovatie/wallet-connect-button-vue"
+  "homepage": "https://github.com/kvk-innovatie/wallet-connect-buttons/tree/main/packages/wallet-connect-button-vue#readme"
 }

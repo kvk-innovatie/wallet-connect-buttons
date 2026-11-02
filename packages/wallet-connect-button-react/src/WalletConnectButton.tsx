@@ -233,7 +233,7 @@ function WalletConnectButton({ label, serviceId: serviceIdProp, clientId: client
     // Dynamically import the web component
     const loadWebComponent = async () => {
       try {
-        await import("./nl-wallet-web.js");
+        await import("../../../vendor/nl-wallet-web.js");
         const button = buttonRef.current;
 
         // Attach the event listener when the component mounts
