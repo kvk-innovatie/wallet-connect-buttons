@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Wallet Connect Example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+      body {
+        font-family: "Roboto", sans-serif;
+        margin: 0;
+      }
+      div {
+        background-color: rgb(189 189 189 / 45%);
+        padding: 8px 18px;
+        border: 1px solid #ffffff63;
+        border-radius: 4px;
+      }
+      nl-wallet-button::part(button) {
+        border-radius: 6px;
+        padding: 12px 20px;
+        margin: 4px;
+      }
+      nl-wallet-button::part(button-span) {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="buttons">
+    <div>
+      <h1>Share data with your wallet</h1>
+      <div>
+        <h2>nb wallet</h2>
+        <wallet-connect-button
+          service-id="EH_A91C4D2F6B30E785"
+          api-key="f1e2720e399ccf3f61741212068c629fb8fd845526ce004b192e2a6f7b43fdea"
+          label="Share data with your wallet (quick and easy, only frontend)"
+          lang="en"
+          nbwallet
+        ></wallet-connect-button>
+      </div>
+      <div>
+        <h2>Using local Wallet-Connect server</h2>
+        <div>
+          <h3>With your personal wallet</h3>
+          <wallet-connect-button
+            client-id="nlw_6e80b7a6b9bd30d9d18a3a2a9c4839f9"
+            api-key="d8ea835f5421ee9e86f175caaaf1a80cb894f719bc0ab4d06435325eab82a072"
+            use-local-wc-server
+            label="Share data with your wallet"
+            lang="en"
+          ></wallet-connect-button>
+        </div>
+        <div>
+          <h3>With your business wallet</h3>
+          <wallet-connect-button
+            client-id="nlw_5bf84a188afe0d78dfe71b4a66d136f0"
+            api-key="035a1255090cd58397522059f8cdbad3ff9df0806e654200c430ead92b7ab1dc"
+            use-local-wc-server
+            business
+            label="Share data with your business wallet"
+            lang="en"
+          ></wallet-connect-button>
+        </div>
+      </div>
+      <div>
+        <h2>Using remote Wallet-Connect server</h2>
+        <div>
+          <h3>With your personal wallet</h3>
+          <wallet-connect-button
+            client-id="nlw_c4ee72ead0d6f8a821fcf2e8776ac845"
+            api-key="9efb59f4784d8b0b1121a4474c3655e402ac83f1681e208a0f7726abefb3b557"
+            label="Share data with your wallet (quick and easy, only frontend)"
+            lang="en"
+          ></wallet-connect-button>
+          <wallet-connect-button
+            client-id="nlw_c212597e1ef485b5401e280d6d356772"
+            label="Share data with your wallet (secure, via backend)"
+            lang="en"
+          ></wallet-connect-button>
+        </div>
+        <div>
+          <h3>With your business wallet</h3>
+          <wallet-connect-button
+            business
+            client-id="nlw_daffa2a898e39283167b7aa4103a6381"
+            api-key="fa6cb19b510b27581ca5836ce4b9d2a3e878d083faf8afaa77d20ca6d49eb20a"
+            label="Share data from your business wallet (remote, quick and easy)"
+            lang="en"
+          ></wallet-connect-button>
+        </div>
+        <div>
+          <h3>With 18up wallet</h3>
+          <wallet-connect-button
+            over18
+            client-id="nlw_b5152be3a522a394a58e3c88c0c9a015"
+            api-key="2464717b6db189d1a36fa2ee234f3bfded22e5d8ff02b96436c3c22e5a6a36ef"
+            label="I am 18 years or older"
+            help-base-url="https://18up.eu/en/privacy/"
+            lang="en"
+          ></wallet-connect-button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h1>Add data to your wallet</h1>
+      <div>
+        <h2>Using local Wallet-Connect server</h2>
+        <div>
+          <h3>With your personal wallet</h3>
+          <wallet-connect-button
+            label="Add data to your wallet"
+            client-id="nlw_f93e7399df9d74df1f2de7d6c076c1b8"
+            use-local-wc-server
+            issuance
+            help-base-url="https://example.com/"
+            lang="en"
+          ></wallet-connect-button>
+        </div>
+        <div>
+          <h3>With your business wallet</h3>
+          <wallet-connect-button
+            label="Add data to your business wallet"
+            client-id="nlw_427bfe32f022d57c19a3e6a29f3d7a61"
+            use-local-wc-server
+            business
+            issuance
+            help-base-url="https://example.com/"
+            lang="en"
+          ></wallet-connect-button>
+        </div>
+      </div>
+      <div>
+        <h2>Using remote Wallet-Connect server</h2>
+        <div>
+          <h3>With your personal wallet</h3>
+          <wallet-connect-button
+            label="Add data to your wallet"
+            client-id="nlw_2fe35d507c90c42aaa355cba14c3c8ed"
+            issuance
+            help-base-url="https://example.com/"
+            lang="en"
+          ></wallet-connect-button>
+        </div>
+        <div>
+          <h3>With your business wallet</h3>
+          <wallet-connect-button
+            label="Add data to your business wallet"
+            client-id="nlw_a9517a99999176845e13f61fcaba262b"
+            business
+            issuance
+            help-base-url="https://example.com/"
+            lang="en"
+          ></wallet-connect-button>
+        </div>
+      </div>
+    </div>
+</div>
+    <pre id="attributes-content"></pre>
+
+    <script src="wallet-connect-button.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/gh/kvk-innovatie/wallet-connect-button-vanillajs@v1.0.38/wallet-connect-button.js"></script> -->
+    <script>
+      function handleSuccess(event) {
+        let attributes = event.detail;
+        document.getElementById("attributes-content").textContent = JSON.stringify(attributes, null, 2);
+
+        // Hide all wallet connect buttons
+        document.getElementById("buttons")?.style.setProperty("display", "none");
+      }
+
+      function handleFailed(event) {
+        console.log("Something went wrong:", event.detail);
+      }
+
+      const wallet_buttons = document.getElementsByTagName("wallet-connect-button");
+
+      Array.from(wallet_buttons).forEach((button) => {
+        button.addEventListener("success", handleSuccess, false);
+        button.addEventListener("failed", handleFailed, false);
+      });
+    </script>
+  </body>
+</html>
