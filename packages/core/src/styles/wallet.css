@@ -1,7 +1,9 @@
 /* Reset: everything inside the overlay starts from the browser defaults, whether the
-   dialog lives in a shadow root (vanilla) or in the page (React, Vue). */
+   dialog lives in a shadow root (vanilla) or in the page (React, Vue). `:where()` keeps the
+   specificity at one class, so a bare `.wcb-modal` rule below still wins (a plain
+   `:not(svg, ...)` would count as class + type and revert the dialog's own styles). */
 .wcb-overlay,
-.wcb-overlay *:not(svg, path, circle) {
+.wcb-overlay :where(*:not(svg, path, circle)) {
   all: revert;
   box-sizing: border-box;
   margin: 0;

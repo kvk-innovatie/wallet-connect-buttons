@@ -45,6 +45,9 @@ export interface ModalContext {
 
 const icon = (d: string) => svg(d, { size: 16 })
 
+/** The footer actions name their icon; look the path up (ModalFooter.vue / WalletModal.tsx do the same). */
+const footerIcon = (name: string) => ICONS[name as "cancel" | "retry" | "check" | "close" | "back"]
+
 const action = (
   ctx: ModalContext,
   opts: { testId: string; variant: string; word: Parameters<Translate>[0]; icon: string; command: FooterCommand },
@@ -57,7 +60,7 @@ const action = (
       "data-testid": opts.testId,
       onclick: () => ctx.on.command(opts.command),
     },
-    icon(opts.icon),
+    icon(footerIcon(opts.icon)),
     h("span", {}, ctx.t(opts.word)),
   )
 

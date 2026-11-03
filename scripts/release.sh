@@ -34,9 +34,9 @@ if [[ -z "$BUMP" ]]; then
 fi
 TAG_PREFIX="${TAG_PREFIX:-v}"
 
-# Public (non-private) workspaces under packages/.
+# Public (non-private) workspaces under packages/, as paths relative to the repository root.
 mapfile -t PACKAGES < <(for f in packages/*/package.json; do
-  node -e 'const p=require(process.argv[1]); if(!p.private) console.log(require("path").dirname(process.argv[1]))' "$PWD/$f"
+  node -e 'const p=require(process.argv[1]); if(!p.private) console.log(process.argv[2])' "$PWD/$f" "$(dirname "$f")"
 done)
 echo "Packages: ${PACKAGES[*]}"
 
