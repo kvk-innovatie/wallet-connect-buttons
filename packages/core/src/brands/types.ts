@@ -11,13 +11,23 @@ export interface Brand {
   /** Class on the modal root that selects the brand's colours and logo in the stylesheet. */
   cssClass: string
   translations: Partial<Record<Language, DictionaryOverrides>>
-  /** Wallet-connect servers: remote and local, for disclosure and issuance. */
+  /**
+   * Wallet-connect servers, remote and local. `disclosure` is wallet-connect's own API; `issuance` and
+   * `localIssuance` are only used by the static issuance flow.
+   */
   hosts: {
     disclosure: string
     issuance: string
     localDisclosure: string
     localIssuance: string
   }
+  /**
+   * How an issuance button gets its links (default "static"):
+   * - "lane": wallet-connect's issuance sessions on the disclosure host (the WE BUILD lane): the dialog
+   *   creates a session and shows the links its status hands out (an ID-step request, then the credential offer);
+   * - "static": the fixed `disclosure_based_issuance` links on the issuance host (the NL stack).
+   */
+  issuanceFlow?: "lane" | "static"
   /** Scheme + host the static issuance links open the wallet app with. */
   deepLinkScheme: string
   /** NB Wallet Connect renamed the registration id to "service id" throughout its API. */

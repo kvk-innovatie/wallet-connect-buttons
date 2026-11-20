@@ -5,14 +5,23 @@
 // status polls return CREATED (with a universal link), the next two WAITING_FOR_RESPONSE, then
 // DONE. Set MOCK_OUTCOME=FAILED|EXPIRED|CANCELLED to end differently, MOCK_POLLS to change the
 // pace. DELETE cancels. /api/disclosed-attributes returns fixed attributes.
+//
+// Issuance sessions as on the WE BUILD lane (POST /api/issuance/sessions): every status hands out
+// the same credential offer (openid-credential-offer://) for MOCK_OFFER_POLLS polls (default 150,
+// about five minutes), then EXPIRED; an issuance never reports DONE. With MOCK_ID_STEP=1 an ID step
+// comes first: MOCK_POLLS polls with a new openid4vp:// request each, MOCK_POLLS polls
+// WAITING_FOR_RESPONSE, then the offer.
 import express from "express"
 import { randomBytes } from "node:crypto"
 
 const port = Number(process.env.PORT ?? 5021)
 const outcome = process.env.MOCK_OUTCOME ?? "DONE"
 const polls = Number(process.env.MOCK_POLLS ?? 2)
+const offerPolls = Number(process.env.MOCK_OFFER_POLLS ?? 150)
+const idStepPolls = process.env.MOCK_ID_STEP === "1" ? polls : 0
 
 const sessions = new Map()
+const issuances = new Map()
 const app = express()
 app.use(express.json())
 app.use((req, res, next) => {
@@ -45,6 +54,36 @@ app.get("/disclosure/:token/status", (req, res) => {
 
 app.delete("/disclosure/:token/status", (req, res) => {
   const s = sessions.get(req.params.token)
+  if (s) s.cancelled = true
+  res.sendStatus(204)
+})
+
+app.post("/api/issuance/sessions", (req, res) => {
+  const token = randomBytes(16).toString("hex")
+  issuances.set(token, { usecase: req.body?.usecase, polls: 0, cancelled: false })
+  console.log(`issuance session ${token} for ${req.body?.usecase}`)
+  res.json({ status_url: `http://${req.headers.host}/api/issuance/sessions/${token}`, session_token: token })
+})
+
+app.get("/api/issuance/sessions/:token", (req, res) => {
+  const s = issuances.get(req.params.token)
+  if (!s) return res.status(404).json({ error: "unknown session" })
+  if (s.cancelled) return res.json({ status: "CANCELLED" })
+  s.polls += 1
+  const base = `http://${req.headers.host}/api/issuance/sessions/${req.params.token}`
+  if (s.polls <= idStepPolls) {
+    // the ID step's request carries a short-lived id, so its link changes on every poll
+    return res.json({ status: "CREATED", ul: `openid4vp://?request_uri=${encodeURIComponent(`${base}/request/${s.polls}`)}` })
+  }
+  if (s.polls <= idStepPolls * 2) return res.json({ status: "WAITING_FOR_RESPONSE" })
+  if (s.polls <= idStepPolls * 2 + offerPolls) {
+    return res.json({ status: "CREATED", ul: `openid-credential-offer://?credential_offer_uri=${encodeURIComponent(`${base}/offer`)}` })
+  }
+  res.json({ status: "EXPIRED" })
+})
+
+app.delete("/api/issuance/sessions/:token", (req, res) => {
+  const s = issuances.get(req.params.token)
   if (s) s.cancelled = true
   res.sendStatus(204)
 })

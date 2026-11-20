@@ -43,9 +43,21 @@ import "wallet-connect-button-vanillajs"; // registers <wallet-connect-button>; 
 - `label` – button text (defaults to the wallet's own, in `lang`).
 - `lang` – `"nl"` (default) or `"en"`.
 - `help-base-url` – optional; where "No app yet?" links point (defaults per wallet).
-- `issuance` – the session issues data to the wallet instead of asking for it.
+- `issuance` – put the registration's credential into the wallet instead of asking for data. The dialog creates
+  an issuance session at wallet-connect (WE BUILD lane, no API key needed) and shows the links it hands out: an
+  ID-step request if the issuer has one, then the credential offer. Closing before the offer cancels the
+  session; after it the session is left to expire (a wallet may still be collecting the credential). No
+  `success` event for an issuance. See the
+  [React package README](https://github.com/kvk-innovatie/wallet-connect-buttons/tree/main/packages/wallet-connect-button-react#issuance)
+  for the details.
+- `session-url`, `session-body` – optional; start the session through your own backend: the dialog POSTs
+  `session-body` (JSON text; `{}` when it is missing or not JSON, the latter with a console warning) to
+  `session-url` and follows the `{ session_token, status_url }` it answers. For issuance and disclosure alike.
+  The dialog waits up to 15 seconds for the answer; see the
+  [React package README](https://github.com/kvk-innovatie/wallet-connect-buttons/tree/main/packages/wallet-connect-button-react#starting-the-session-through-your-own-backend).
 - `use-local-wc-server` – talk to a wallet-connect server on localhost (development).
 - `return-url` – where the wallet sends the user after a same-device disclosure (iframe support, see below).
+  wallet-connect appends `?session_token=…` to it, so it must not have a query string or fragment itself.
 - `business` – Business Wallet instead of NP Wallet (other servers, colours and texts).
 - `over18` – 18up instead of NP Wallet.
 Boolean attributes (`issuance`, `use-local-wc-server`, …) are set by their presence.

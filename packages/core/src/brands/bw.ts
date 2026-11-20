@@ -28,10 +28,13 @@ export const bw: Brand = {
   },
   hosts: {
     disclosure: "https://bw.wallet-connect.eu",
+    // static flow only: answers 410 since wallet-connect.eu moved to the WE BUILD lane
     issuance: "https://bw.issuance.wallet-connect.eu",
     localDisclosure: "http://bw.localhost:5021",
     localIssuance: "http://localhost:5017",
   },
+  // issuance sessions on bw.wallet-connect.eu (WE BUILD lane)
+  issuanceFlow: "lane",
   deepLinkScheme: "businesswalletdebuginteraction://ebwallet.org",
   idParam: "client_id",
   idPath: "client",

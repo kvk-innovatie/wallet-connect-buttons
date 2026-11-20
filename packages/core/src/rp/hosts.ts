@@ -6,10 +6,17 @@ export interface HostFlags {
   useLocalWcServer?: boolean
 }
 
-/** The wallet-connect server for a brand: issuance has its own host, local development its own ports. */
+/** Whether the brand's issuance buttons use wallet-connect's issuance sessions (the WE BUILD lane). */
+export const usesIssuanceLane = (brand: Brand): boolean => brand.issuanceFlow === "lane"
+
+/**
+ * The wallet-connect server for a brand, local development on its own ports. A static issuance has its
+ * own host; on the WE BUILD lane issuance is part of wallet-connect's own API, the disclosure host.
+ */
 export const resolveHost = (brand: Brand, { issuance = false, useLocalWcServer = false }: HostFlags): string => {
-  if (useLocalWcServer) return issuance ? brand.hosts.localIssuance : brand.hosts.localDisclosure
-  return issuance ? brand.hosts.issuance : brand.hosts.disclosure
+  const staticIssuance = issuance && !usesIssuanceLane(brand)
+  if (useLocalWcServer) return staticIssuance ? brand.hosts.localIssuance : brand.hosts.localDisclosure
+  return staticIssuance ? brand.hosts.issuance : brand.hosts.disclosure
 }
 
 /** An explicit help-base-url wins; otherwise the brand's own help page. */
@@ -26,6 +33,13 @@ export const resolveReturnUrl = (returnUrl: string | undefined | null, documentU
  */
 export const buildStartUrl = (host: string, returnUrl: string): string =>
   `${host}/api/create-session?lang=en&return_url=${encodeURIComponent(returnUrl)}`
+
+/**
+ * Where the modal creates an issuance session on the WE BUILD lane. Always wallet-connect itself: the
+ * lane's issuance API needs no API key, so there is no backend proxy for it.
+ */
+export const buildIssuanceStartUrl = (host: string, lang: string): string =>
+  `${host}/api/issuance/sessions?lang=${encodeURIComponent(lang)}`
 
 /** The fixed deep link of an issuance: the wallet fetches the request from the wallet-connect server itself. */
 export const buildStaticUniversalLink = (

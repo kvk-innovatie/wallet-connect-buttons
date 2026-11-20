@@ -2,6 +2,7 @@ import {
   WalletConnectController,
   ensureStyles,
   selectBrand,
+  sessionBodyKey,
   type DisclosedAttributesResponse,
   type SessionDriver,
   type SessionOutcome,
@@ -26,12 +27,24 @@ export interface WalletConnectButtonProps {
   business?: boolean
   lang?: string
   helpBaseUrl?: string
+  /**
+   * Put the registration's credential into the wallet instead of asking for data. The dialog creates an
+   * issuance session at wallet-connect (WE BUILD lane; no API key needed) and shows the links it hands out.
+   */
   issuance?: boolean
   over18?: boolean
   /** @deprecated in the NP/BW/18up package: use nb-wallet-connect-button-react. */
   nbwallet?: boolean
   /** Where the wallet sends the user after a same-device disclosure (iframe support). */
   returnUrl?: string
+  /**
+   * Start the session through the page's own backend instead of wallet-connect (e.g. to issue this person's
+   * data): the dialog POSTs `sessionBody` there as JSON and follows the `{ session_token, status_url }` it
+   * answers. For issuance and disclosure alike.
+   */
+  sessionUrl?: string
+  /** The JSON body of the `sessionUrl` request (default `{}`), e.g. `{ person: "N3" }`. */
+  sessionBody?: unknown
   /** Extra class names and inline style for the button element (`nl-wallet-button::part(button)` in 1.x). */
   className?: string
   style?: CSSProperties
@@ -44,8 +57,10 @@ export const createWalletConnectButton = (config: ButtonConfig) => {
   let warned = false
 
   const WalletConnectButton = (props: WalletConnectButtonProps) => {
-    const { label, serviceId, clientId: clientIdProp, onSuccess, onFailed, apiKey, useLocalWcServer = false, business = false, lang, helpBaseUrl, issuance = false, over18 = false, nbwallet = false, returnUrl, className, style, classes } = props
+    const { label, serviceId, clientId: clientIdProp, onSuccess, onFailed, apiKey, useLocalWcServer = false, business = false, lang, helpBaseUrl, issuance = false, over18 = false, nbwallet = false, returnUrl, sessionUrl, sessionBody, className, style, classes } = props
     const clientId = serviceId ?? clientIdProp
+    // an inline `sessionBody={{ ... }}` is a new object on every render: rebuild the controller only when its content changes
+    const bodyKey = sessionBodyKey(sessionBody)
 
     // the callbacks may change every render; the controller reads the latest through refs
     const onSuccessRef = useRef(onSuccess)
@@ -68,12 +83,15 @@ export const createWalletConnectButton = (config: ButtonConfig) => {
         lang,
         helpBaseUrl,
         returnUrl,
+        sessionUrl,
+        sessionBody,
         label,
         fetch: config.fetch,
         onSuccess: (attributes) => onSuccessRef.current?.(attributes),
         onFailed: (outcome) => onFailedRef.current?.(outcome),
       })
-    }, [clientId, apiKey, useLocalWcServer, business, over18, nbwallet, issuance, lang, helpBaseUrl, returnUrl, label])
+      // sessionBody is represented by bodyKey
+    }, [clientId, apiKey, useLocalWcServer, business, over18, nbwallet, issuance, lang, helpBaseUrl, returnUrl, sessionUrl, bodyKey, label])
 
     const connect = useConnectState(controller)
     const [session, setSession] = useState<SessionDriver | null>(null)

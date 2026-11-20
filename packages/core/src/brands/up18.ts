@@ -29,6 +29,8 @@ export const up18: Brand = {
     },
   },
   hosts: np.hosts,
+  // no issuance host of its own: it issues through NP Wallet's wallet-connect.eu, so on the lane as well
+  issuanceFlow: np.issuanceFlow,
   deepLinkScheme: np.deepLinkScheme,
   idParam: "client_id",
   idPath: "client",

@@ -1,7 +1,8 @@
 // @vitest-environment happy-dom
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { bw, np } from "../src/brands"
-import { WalletConnectController } from "../src/rp/controller"
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest"
+import { bw, np, up18, type Brand } from "../src/brands"
+import { WalletConnectController, sessionBodyKey, type WalletConnectOptions } from "../src/rp/controller"
+import { StaticSession, WalletSession } from "../src/session/WalletSession"
 import { disclosedAttributesUrl, fetchDisclosedAttributes } from "../src/rp/disclosed"
 import { SESSION_MESSAGE_TYPE, sessionFromMessage } from "../src/rp/iframe"
 import { clearRequestedCredentialsCache, fetchRequestedCredentials } from "../src/rp/requested"
@@ -39,6 +40,17 @@ describe("url params", () => {
     expect(readSessionParams(window.location.search)).toEqual({ session_token: "tok", nonce: "n1" })
     clearSessionParams(window)
     expect(window.location.search).toBe("?keep=1")
+  })
+})
+
+describe("sessionBodyKey", () => {
+  it("changes only when the body's JSON does", () => {
+    expect(sessionBodyKey({ person: "N3" })).toBe(sessionBodyKey({ person: "N3" }))
+    expect(sessionBodyKey({ person: "N3" })).not.toBe(sessionBodyKey({ person: "N4" }))
+    expect(sessionBodyKey(undefined)).toBeUndefined()
+    const circular: Record<string, unknown> = {}
+    circular.self = circular
+    expect(sessionBodyKey(circular)).toBe(circular)
   })
 })
 
@@ -88,6 +100,13 @@ describe("WalletConnectController", () => {
   beforeEach(() => window.history.replaceState({}, "", "/page"))
   afterEach(() => vi.restoreAllMocks())
 
+  /** Mount for the current test only, also when it fails. */
+  const mounted = (c: WalletConnectController) => {
+    c.mount()
+    onTestFinished(() => c.unmount())
+    return c
+  }
+
   it("derives label, host, help url and id names from the brand and options", () => {
     const c = new WalletConnectController({ brand: bw, clientId: "nlw_1", lang: "en", apiKey: "k" })
     expect(c.label).toBe("Login with Business Wallet")
@@ -99,10 +118,142 @@ describe("WalletConnectController", () => {
     expect(new WalletConnectController({ brand: np, clientId: "c" }).startUrl.pathname).toBe("/api/create-session")
   })
 
-  it("gives static links for an issuance and a dynamic session otherwise", () => {
-    const issuance = new WalletConnectController({ brand: np, clientId: "c", issuance: true })
-    expect(issuance.staticLinks?.sameDeviceUl.protocol).toBe("walletdebuginteraction:")
+  it("creates a session for an issuance; static links only for a brand on the static flow", () => {
+    for (const brand of [np, bw, up18]) {
+      expect(new WalletConnectController({ brand, clientId: "c", issuance: true }).staticLinks).toBeUndefined()
+      expect(new WalletConnectController({ brand, clientId: "c", issuance: true }).createSession(vi.fn())).toBeInstanceOf(WalletSession)
+    }
     expect(new WalletConnectController({ brand: np, clientId: "c" }).staticLinks).toBeUndefined()
+    const staticNp: Brand = { ...np, issuanceFlow: "static" }
+    const legacy = new WalletConnectController({ brand: staticNp, clientId: "c", issuance: true })
+    expect(legacy.host).toBe("https://issuance.wallet-connect.eu")
+    expect(legacy.staticLinks?.sameDeviceUl.protocol).toBe("walletdebuginteraction:")
+    expect(legacy.createSession(vi.fn())).toBeInstanceOf(StaticSession)
+    // a session started by the page's own backend is followed, whatever the brand
+    expect(new WalletConnectController({ brand: staticNp, clientId: "c", issuance: true, sessionUrl: "/s" }).staticLinks).toBeUndefined()
+  })
+
+  it("starts an issuance at the lane's issuance sessions on the brand's own wallet-connect host", () => {
+    const startUrl = (options: Partial<WalletConnectOptions>) =>
+      new WalletConnectController({ brand: np, clientId: "c", issuance: true, ...options }).startUrl.toString()
+    expect(startUrl({})).toBe("https://wallet-connect.eu/api/issuance/sessions?lang=nl")
+    expect(startUrl({ brand: bw, lang: "en" })).toBe("https://bw.wallet-connect.eu/api/issuance/sessions?lang=en")
+    // an API key changes nothing: the lane's issuance API needs none, so there is no backend proxy for it
+    expect(startUrl({ brand: bw, apiKey: "k" })).toBe("https://bw.wallet-connect.eu/api/issuance/sessions?lang=nl")
+    expect(startUrl({ brand: up18 })).toBe("https://wallet-connect.eu/api/issuance/sessions?lang=nl")
+    expect(startUrl({ useLocalWcServer: true })).toBe("http://localhost:5021/api/issuance/sessions?lang=nl")
+    expect(startUrl({ brand: bw, useLocalWcServer: true })).toBe("http://bw.localhost:5021/api/issuance/sessions?lang=nl")
+  })
+
+  it("starts any session at sessionUrl, resolved against the page", () => {
+    expect(new WalletConnectController({ brand: np, clientId: "c", issuance: true, sessionUrl: "/api/test-pid/session" }).startUrl.toString()).toBe(
+      `${window.location.origin}/api/test-pid/session`,
+    )
+    expect(new WalletConnectController({ brand: np, clientId: "c", apiKey: "k", sessionUrl: "https://backend.example/api/login/session" }).startUrl.toString()).toBe(
+      "https://backend.example/api/login/session",
+    )
+  })
+
+  describe("sessions", () => {
+    const OFFER = "openid-credential-offer://?credential_offer_uri=https%3A%2F%2Fitb.issuance.wallet-connect.eu%2Foffer%2F1"
+    const posts = (fetch: ReturnType<typeof vi.fn>) => fetch.mock.calls.filter(([, init]) => init?.method === "POST")
+    const deletes = (fetch: ReturnType<typeof vi.fn>) => fetch.mock.calls.filter(([, init]) => init?.method === "DELETE")
+
+    it("runs a lane issuance: { usecase } to wallet-connect, the offer on screen, no cancel when closed", async () => {
+      const fetch = vi.fn(async (url: string, init?: RequestInit) => {
+        if (init?.method === "POST") return json({ session_token: "t1", status_url: "https://bw.wallet-connect.eu/api/issuance/sessions/t1" })
+        if (init?.method === "DELETE") return new Response(null, { status: 204 })
+        return json({ status: "CREATED", ul: OFFER })
+      })
+      const onDone = vi.fn()
+      const c = new WalletConnectController({ brand: bw, clientId: "nlw_eucc", issuance: true, lang: "en", fetch })
+      const s = c.createSession(onDone)
+      await s.start()
+      expect(posts(fetch)).toEqual([["https://bw.wallet-connect.eu/api/issuance/sessions?lang=en", expect.objectContaining({ body: JSON.stringify({ usecase: "nlw_eucc" }) })]])
+      expect(fetch.mock.calls[1][0]).toBe("https://bw.wallet-connect.eu/api/issuance/sessions/t1?session_type=cross_device")
+      expect(s.getState()).toMatchObject({ kind: "created", crossDeviceUl: new URL(OFFER) })
+      await s.stop()
+      expect(deletes(fetch)).toEqual([])
+      expect(onDone).toHaveBeenCalledWith({ kind: "close" })
+      expect(window.location.search).toBe("")
+      s.dispose()
+    })
+
+    it("starts an issuance through the page's backend with sessionBody and follows the status_url it answers", async () => {
+      const fetch = vi.fn(async (url: string, init?: RequestInit) => {
+        if (url === "https://backend.example/api/kvk/eucc/E3/session") return json({ session_token: "t2", status_url: "https://bw.wallet-connect.eu/api/issuance/sessions/t2" })
+        if (url.startsWith("https://bw.wallet-connect.eu/api/issuance/sessions/t2") && init?.method === "GET") return json({ status: "CREATED", ul: OFFER })
+        return json({}, 404)
+      })
+      const c = new WalletConnectController({
+        brand: bw,
+        clientId: "nlw_eucc",
+        issuance: true,
+        sessionUrl: "https://backend.example/api/kvk/eucc/E3/session",
+        sessionBody: { person: "N3" },
+        fetch,
+      })
+      const s = c.createSession(vi.fn())
+      await s.start()
+      expect(posts(fetch)).toHaveLength(1)
+      expect(JSON.parse(posts(fetch)[0][1]!.body as string)).toEqual({ person: "N3" })
+      expect(fetch.mock.calls[1][0]).toBe("https://bw.wallet-connect.eu/api/issuance/sessions/t2?session_type=cross_device")
+      expect(s.getState()).toMatchObject({ kind: "created", crossDeviceUl: new URL(OFFER) })
+      s.dispose()
+    })
+
+    it("starts a disclosure through the page's backend ({} by default, relative status_url) and fetches the attributes when done", async () => {
+      const fetch = vi.fn(async (url: string, init?: RequestInit) => {
+        if (url === "https://backend.example/api/login/session") return json({ session_token: "t3", status_url: "status/t3" })
+        if (url.startsWith("https://backend.example/api/login/status/t3")) return json({ status: "DONE" })
+        if (url.includes("/api/disclosed-attributes")) return json({ attributes: { pid: {} } })
+        return json({}, 404)
+      })
+      const onSuccess = vi.fn()
+      const c = mounted(new WalletConnectController({ brand: np, clientId: "nlw_login", apiKey: "k", sessionUrl: "https://backend.example/api/login/session", onSuccess, fetch }))
+      const onDone = vi.fn()
+      const s = c.createSession(onDone)
+      await s.start()
+      expect(JSON.parse(posts(fetch)[0][1]!.body as string)).toEqual({})
+      expect(s.getState()).toMatchObject({ kind: "success", session: { sessionToken: "t3", sessionType: "cross_device" } })
+      s.close()
+      await vi.waitFor(() => expect(onSuccess).toHaveBeenCalledWith({ attributes: { pid: {} } }))
+      expect(fetch.mock.calls.at(-1)![0]).toBe("https://wallet-connect.eu/api/disclosed-attributes?session_token=t3&client_id=nlw_login")
+      expect(onDone).toHaveBeenCalledWith({ kind: "success", sessionToken: "t3", sessionType: "cross_device" })
+    })
+
+    it("does not fetch attributes for an issuance that reports DONE", async () => {
+      const fetch = vi.fn(async () => json({}, 404))
+      const onSuccess = vi.fn()
+      const onDone = vi.fn()
+      const c = mounted(new WalletConnectController({ brand: np, clientId: "c", apiKey: "k", issuance: true, onSuccess, fetch }))
+      const s = c.createSession(onDone)
+      ;(s as unknown as { options: { onDone: (o: unknown) => void } }).options.onDone({ kind: "success", sessionToken: "tok", sessionType: "cross_device" })
+      expect(onDone).toHaveBeenCalled()
+      await new Promise((r) => setTimeout(r, 0))
+      expect(fetch).not.toHaveBeenCalled()
+      expect(onSuccess).not.toHaveBeenCalled()
+      expect(window.location.search).toBe("")
+    })
+  })
+
+  it("leaves a disclosure's session token in the url to the disclosure button: an issuance button ignores it", async () => {
+    window.history.replaceState({}, "", "/page?session_token=tok&nonce=n")
+    const fetch = vi.fn().mockResolvedValue(json({ attributes: { a: 1 } }))
+    const issuer = mounted(new WalletConnectController({ brand: np, clientId: "issuer", apiKey: "k", issuance: true, fetch }))
+    window.dispatchEvent(new Event("popstate"))
+    window.dispatchEvent(new MessageEvent("message", { data: { type: SESSION_MESSAGE_TYPE, session_token: "tok" }, origin: window.location.origin }))
+    await new Promise((r) => setTimeout(r, 0))
+    expect(fetch).not.toHaveBeenCalled()
+    expect(issuer.getState().phase.kind).toBe("idle")
+    expect(window.location.search).toBe("?session_token=tok&nonce=n")
+
+    // the disclosure button on the same page still picks it up
+    const onSuccess = vi.fn()
+    mounted(new WalletConnectController({ brand: np, clientId: "verifier", apiKey: "k", onSuccess, fetch }))
+    await vi.waitFor(() => expect(onSuccess).toHaveBeenCalledWith({ attributes: { a: 1 } }))
+    expect(fetch.mock.calls.map(([url]) => url)).toEqual(["https://wallet-connect.eu/api/disclosed-attributes?session_token=tok&client_id=verifier&nonce=n"])
+    expect(window.location.search).toBe("")
   })
 
   it("fetches disclosed attributes for a session token in the url on mount, then clears it", async () => {

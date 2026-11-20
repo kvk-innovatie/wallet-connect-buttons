@@ -4,7 +4,15 @@ import { StaticSession, WalletSession, type SessionDriver, type SessionOutcome }
 import { resolveLanguage, translations, type Language, type Translate } from "../translations"
 import { detectDevice, type Device } from "../useragent"
 import { fetchDisclosedAttributes, type DisclosedAttributesResponse } from "./disclosed"
-import { buildStartUrl, buildStaticUniversalLinks, resolveHelpBaseUrl, resolveHost, resolveReturnUrl } from "./hosts"
+import {
+  buildIssuanceStartUrl,
+  buildStartUrl,
+  buildStaticUniversalLinks,
+  resolveHelpBaseUrl,
+  resolveHost,
+  resolveReturnUrl,
+  usesIssuanceLane,
+} from "./hosts"
 import { sessionFromMessage, type SessionParams } from "./iframe"
 import { fetchRequestedCredentials, type RequestedCredential } from "./requested"
 import { clearSessionParams, readSessionParams, writeSessionParams } from "./urlParams"
@@ -20,12 +28,34 @@ export interface WalletConnectOptions {
   lang?: string | null
   helpBaseUrl?: string | null
   returnUrl?: string | null
+  /**
+   * The page's own endpoint that starts the session instead of wallet-connect, e.g. a backend that first
+   * gives the registration this person's data. The dialog POSTs `sessionBody` there as JSON and follows the
+   * `{ session_token, status_url }` it answers (a relative status_url is resolved against `sessionUrl`).
+   * Resolved against the page's address. For issuance and disclosure alike.
+   */
+  sessionUrl?: string | null
+  /** The JSON body of the `sessionUrl` request; `{}` when not set. */
+  sessionBody?: unknown
   label?: string | null
   onSuccess?: (attributes: DisclosedAttributesResponse) => void
   onFailed?: (outcome: SessionOutcome) => void
   fetch?: Fetch
   /** The page's window; defaults to the global one and may be absent on a server. */
   win?: Window
+}
+
+/**
+ * A stand-in for `sessionBody` that changes only when its JSON does, so a framework keeps its controller when
+ * the page passes a new object with the same content on every render (`sessionBody={{ person }}`).
+ */
+export const sessionBodyKey = (body: unknown): unknown => {
+  if (body === undefined) return undefined
+  try {
+    return JSON.stringify(body)
+  } catch {
+    return body
+  }
 }
 
 export type ConnectPhase = { kind: "idle" } | { kind: "checking" } | { kind: "error"; message: string }
@@ -99,15 +129,25 @@ export class WalletConnectController {
     return resolveReturnUrl(this.options.returnUrl, this.win?.location.href ?? "")
   }
 
-  /** The session-creating endpoint: the server itself with an API key, else the page's own backend. */
+  /**
+   * The session-creating endpoint: the page's own `sessionUrl` when set. Otherwise wallet-connect's issuance
+   * sessions for an issuance (WE BUILD lane, no API key needed), and for a disclosure wallet-connect itself
+   * with an API key, else the page's own backend proxy.
+   */
   get startUrl(): URL {
-    const url = buildStartUrl(this.options.apiKey ? this.host : "", this.returnUrl)
-    return new URL(url, this.win?.location.href ?? "http://localhost/")
+    const base = this.win?.location.href ?? "http://localhost/"
+    if (this.options.sessionUrl) return new URL(this.options.sessionUrl, base)
+    if (this.issuance) return new URL(buildIssuanceStartUrl(this.host, this.lang), base)
+    return new URL(buildStartUrl(this.options.apiKey ? this.host : "", this.returnUrl), base)
   }
 
-  /** The fixed links of an issuance; undefined for a disclosure, which creates its session dynamically. */
+  /**
+   * The fixed links of a static issuance (a brand without the lane); undefined when the dialog creates a
+   * session: a disclosure, an issuance on the lane, or any session started at `sessionUrl`.
+   */
   get staticLinks(): { sameDeviceUl: URL; crossDeviceUl: URL } | undefined {
-    return this.issuance ? buildStaticUniversalLinks(this.brand, this.host, this.clientId) : undefined
+    if (!this.issuance || usesIssuanceLane(this.brand) || this.options.sessionUrl) return undefined
+    return buildStaticUniversalLinks(this.brand, this.host, this.clientId)
   }
 
   /** Whether the dialog shows download badges per role (NB only, with a registration id, for a disclosure). */
@@ -120,10 +160,15 @@ export class WalletConnectController {
     return !!this.brand.store && !!this.clientId && this.issuance
   }
 
-  /** Start listening for a returning session (URL, popstate, iframe message) and handle one already present. */
+  /**
+   * Start listening for a returning session (URL, popstate, iframe message) and handle one already present.
+   * Only a disclosure returns: an issuance button leaves a `session_token` in the address alone, since it
+   * belongs to a disclosure button on the same page.
+   */
   mount(): void {
     if (this.mounted || !this.win) return
     this.mounted = true
+    if (this.issuance) return
     this.win.addEventListener("popstate", this.onPopState)
     this.win.addEventListener("message", this.onMessage)
     this.checkForSession()
@@ -149,8 +194,9 @@ export class WalletConnectController {
   createSession(onDone: (outcome: SessionOutcome) => void): SessionDriver {
     const isMobile = this.device.isMobile
     const done = (outcome: SessionOutcome) => {
-      if (outcome.kind === "success" && outcome.sessionType === "cross_device" && this.win) {
+      if (outcome.kind === "success" && outcome.sessionType === "cross_device" && !this.issuance && this.win) {
         // A same-device disclosure returns via the URL; cross-device we put the token there ourselves.
+        // An issuance has no attributes to fetch.
         writeSessionParams(this.win, { session_token: outcome.sessionToken })
         this.checkForSession()
       }
@@ -162,6 +208,8 @@ export class WalletConnectController {
     return new WalletSession({
       startUrl: this.startUrl,
       usecase: this.clientId,
+      startBody: this.options.sessionUrl ? (this.options.sessionBody ?? {}) : undefined,
+      issuance: this.issuance,
       isMobile,
       api: fetchApi(this.fetch),
       onDone: done,

@@ -19,7 +19,7 @@ export interface DefineOptions {
   nbwalletWarning?: string
 }
 
-/** The attribute names the 1.x element accepted, camelCase and kebab-case alike. */
+/** The attribute names the element accepts (the 1.x ones and `session-url` / `session-body`), camelCase and kebab-case alike. */
 export const OBSERVED_ATTRIBUTES = [
   "clientid",
   "client-id",
@@ -34,6 +34,10 @@ export const OBSERVED_ATTRIBUTES = [
   "help-base-url",
   "returnurl",
   "return-url",
+  "sessionurl",
+  "session-url",
+  "sessionbody",
+  "session-body",
   "issuance",
   "business",
   "over18",
@@ -46,6 +50,17 @@ const attr = (el: HTMLElement, ...names: string[]): string | undefined => {
     if (value !== null) return value
   }
   return undefined
+}
+
+/** The `session-body` attribute: JSON text. Not JSON: a warning, and the request goes without it (`{}`). */
+const parseSessionBody = (text: string | undefined): unknown => {
+  if (text === undefined) return undefined
+  try {
+    return JSON.parse(text)
+  } catch {
+    console.warn("wallet-connect-button: the session-body attribute is not JSON; the session is started without it")
+    return undefined
+  }
 }
 
 /** An instance of the button element. */
@@ -130,6 +145,8 @@ export const defineWalletConnectButton = (
         lang: attr(this, "lang"),
         helpBaseUrl: attr(this, "helpBaseUrl", "helpbaseurl", "help-base-url"),
         returnUrl: attr(this, "returnUrl", "returnurl", "return-url"),
+        sessionUrl: attr(this, "sessionUrl", "sessionurl", "session-url"),
+        sessionBody: parseSessionBody(attr(this, "sessionBody", "sessionbody", "session-body")),
         label: attr(this, "label"),
         fetch: options.fetch,
         onSuccess: (attributes) => this.dispatchEvent(new CustomEvent("success", { detail: attributes, bubbles: true, composed: true })),

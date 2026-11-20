@@ -3,6 +3,7 @@ import {
   WalletConnectController,
   ensureStyles,
   selectBrand,
+  sessionBodyKey,
   type SessionDriver,
 } from "@wallet-connect/core"
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch, type PropType } from "vue"
@@ -19,6 +20,15 @@ const props = defineProps({
   config: { type: Object as PropType<ButtonConfig>, required: true },
 })
 
+// An inline `:session-body="{ ... }"` is a new object on every render of the parent: the controller follows
+// sessionBody only when its content changes.
+const sessionBody = shallowRef(props.sessionBody)
+watch(
+  () => sessionBodyKey(props.sessionBody),
+  () => (sessionBody.value = props.sessionBody),
+  { flush: "sync" },
+)
+
 const controller = computed(() => {
   const flags = { business: props.business, over18: props.over18, nbwallet: props.nbwallet }
   if (flags.nbwallet && props.config.nbwalletWarning && !warnedConfigs.has(props.config)) {
@@ -34,6 +44,8 @@ const controller = computed(() => {
     lang: props.lang,
     helpBaseUrl: props.helpBaseUrl,
     returnUrl: props.returnUrl,
+    sessionUrl: props.sessionUrl,
+    sessionBody: sessionBody.value,
     label: props.label,
     fetch: props.config.fetch,
     onSuccess: (attributes) => props.onSuccess?.(attributes),

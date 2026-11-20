@@ -1,27 +1,44 @@
 import { describe, expect, it } from "vitest"
-import { bw, np, selectBrand, up18 } from "../src/brands"
+import { bw, np, selectBrand, up18, type Brand } from "../src/brands"
 import {
+  buildIssuanceStartUrl,
   buildStartUrl,
   buildStaticUniversalLink,
   resolveHelpBaseUrl,
   resolveHost,
   resolveReturnUrl,
+  usesIssuanceLane,
 } from "../src/rp/hosts"
 
-// The exact hosts the 1.x buttons hard-coded in getDefaultHost().
+// A brand that still issues with the static links (NB Wallet Connect, in the other repository, works this way).
+const staticNp: Brand = { ...np, issuanceFlow: "static" }
+
+// The hosts the 1.x buttons hard-coded in getDefaultHost(), except issuance: on the WE BUILD lane it is part of
+// wallet-connect's own API, the disclosure host. Only a brand on the static flow keeps its issuance hosts.
 describe("resolveHost", () => {
   it.each([
-    [np, {}, "https://wallet-connect.eu"],
-    [np, { issuance: true }, "https://issuance.wallet-connect.eu"],
-    [np, { useLocalWcServer: true }, "http://localhost:5021"],
-    [np, { useLocalWcServer: true, issuance: true }, "http://localhost:5007"],
-    [bw, {}, "https://bw.wallet-connect.eu"],
-    [bw, { issuance: true }, "https://bw.issuance.wallet-connect.eu"],
-    [bw, { useLocalWcServer: true }, "http://bw.localhost:5021"],
-    [bw, { useLocalWcServer: true, issuance: true }, "http://localhost:5017"],
-    [up18, {}, "https://wallet-connect.eu"],
-  ])("%o with %o -> %s", (brand, flags, host) => {
+    ["np", np, {}, "https://wallet-connect.eu"],
+    ["np", np, { issuance: true }, "https://wallet-connect.eu"],
+    ["np", np, { useLocalWcServer: true }, "http://localhost:5021"],
+    ["np", np, { useLocalWcServer: true, issuance: true }, "http://localhost:5021"],
+    ["bw", bw, {}, "https://bw.wallet-connect.eu"],
+    ["bw", bw, { issuance: true }, "https://bw.wallet-connect.eu"],
+    ["bw", bw, { useLocalWcServer: true }, "http://bw.localhost:5021"],
+    ["bw", bw, { useLocalWcServer: true, issuance: true }, "http://bw.localhost:5021"],
+    ["up18", up18, {}, "https://wallet-connect.eu"],
+    ["up18", up18, { issuance: true }, "https://wallet-connect.eu"],
+    ["static np", staticNp, { issuance: true }, "https://issuance.wallet-connect.eu"],
+    ["static np", staticNp, { useLocalWcServer: true, issuance: true }, "http://localhost:5007"],
+    ["static np", staticNp, {}, "https://wallet-connect.eu"],
+  ] as const)("%s with %o -> %s", (_name, brand, flags, host) => {
     expect(resolveHost(brand, flags)).toBe(host)
+  })
+
+  it("puts NP Wallet, Business Wallet and 18up on the lane; a brand without issuanceFlow is static", () => {
+    expect([np, bw, up18].map(usesIssuanceLane)).toEqual([true, true, true])
+    const { issuanceFlow: _, ...withoutFlow } = np
+    expect(usesIssuanceLane(withoutFlow)).toBe(false)
+    expect(usesIssuanceLane(staticNp)).toBe(false)
   })
 })
 
@@ -47,6 +64,11 @@ describe("urls", () => {
       "https://wallet-connect.eu/api/create-session?lang=en&return_url=https%3A%2F%2Frp.example%2F",
     )
     expect(buildStartUrl("", "https://rp.example/")).toBe("/api/create-session?lang=en&return_url=https%3A%2F%2Frp.example%2F")
+  })
+
+  it("builds the lane's issuance start url", () => {
+    expect(buildIssuanceStartUrl("https://wallet-connect.eu", "nl")).toBe("https://wallet-connect.eu/api/issuance/sessions?lang=nl")
+    expect(buildIssuanceStartUrl("https://bw.wallet-connect.eu", "en")).toBe("https://bw.wallet-connect.eu/api/issuance/sessions?lang=en")
   })
 
   it("builds the static issuance link per brand", () => {

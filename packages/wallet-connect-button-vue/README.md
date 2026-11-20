@@ -35,9 +35,22 @@ const onSuccess = (attributes) => console.log(attributes);
 - `label` – button text (defaults to the wallet's own, in `lang`).
 - `lang` – `"nl"` (default) or `"en"`.
 - `helpBaseUrl` – optional; where "No app yet?" links point (defaults per wallet).
-- `issuance` – the session issues data to the wallet instead of asking for it.
+- `issuance` – put the registration's credential into the wallet instead of asking for data. The dialog creates
+  an issuance session at wallet-connect (WE BUILD lane, no API key needed) and shows the links it hands out: an
+  ID-step request if the issuer has one, then the credential offer. Closing before the offer cancels the
+  session; after it the session is left to expire (a wallet may still be collecting the credential).
+  `onSuccess` is not called for an issuance. See the
+  [React package README](https://github.com/kvk-innovatie/wallet-connect-buttons/tree/main/packages/wallet-connect-button-react#issuance)
+  for the details.
+- `sessionUrl`, `sessionBody` – optional; start the session through your own backend: the dialog POSTs
+  `sessionBody` (JSON, default `{}`) to `sessionUrl` and follows the `{ session_token, status_url }` it answers.
+  For issuance and disclosure alike. A new `sessionBody` object with the same content (an inline
+  `:session-body="{ … }"`) keeps the button and an open dialog as they are. The dialog waits up to 15 seconds for
+  the answer; see the
+  [React package README](https://github.com/kvk-innovatie/wallet-connect-buttons/tree/main/packages/wallet-connect-button-react#starting-the-session-through-your-own-backend).
 - `useLocalWcServer` – talk to a wallet-connect server on localhost (development).
 - `returnUrl` – where the wallet sends the user after a same-device disclosure (iframe support, see below).
+  wallet-connect appends `?session_token=…` to it, so it must not have a query string or fragment itself.
 - `business` – Business Wallet instead of NP Wallet (other servers, colours and texts).
 - `over18` – 18up instead of NP Wallet.
 - `class` and `style` fall through to the `<button>`; the stable class names are `.wcb-button` and

@@ -7,9 +7,14 @@ import { createWalletConnectButton } from "../src"
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } })
 
+const OFFER = "openid-credential-offer://?credential_offer_uri=https%3A%2F%2Fitb.issuance.wallet-connect.eu%2Foffer%2F1"
+
+/** wallet-connect: disclosures (create-session), lane issuance sessions, and a page backend's /session routes. */
 const fakeServer = (status: () => unknown = () => ({ status: "CREATED", ul: "walletdebuginteraction://x/-/" })) =>
   vi.fn(async (url: string, init?: RequestInit) => {
     if (url.includes("/api/create-session")) return json({ status_url: "https://wallet-connect.eu/disclosure/abc/status", session_token: "abc" })
+    if (url.includes("/api/issuance/sessions?")) return json({ status_url: `${new URL(url).origin}/api/issuance/sessions/abc/status`, session_token: "abc" })
+    if (url.endsWith("/session") && init?.method === "POST") return json({ status_url: "https://wallet-connect.eu/api/issuance/sessions/def/status", session_token: "def" })
     if (url.includes("/status")) return init?.method === "DELETE" ? new Response(null, { status: 204 }) : json(status())
     if (url.includes("/disclosed-attributes")) return json({ attributes: { pid: {} } })
     if (url.includes("/requested-credentials")) return json({ data: { requestedCredentials: [{ credentialKey: "k", credentialName: { en: "Diploma", nl: "Diploma" }, websiteUrl: "https://w", vct: "v" }] } })
@@ -108,12 +113,49 @@ describe("WalletConnectButton (Vue)", () => {
   })
 
 
-  it("shows static issuance links without a session", async () => {
-    const w = mount(Button, { props: { clientId: "c", issuance: true, business: true }, attachTo: document.body })
+  it("creates an issuance session at wallet-connect and leaves it alone when closed after the offer", async () => {
+    const lane = fakeServer(() => ({ status: "CREATED", ul: OFFER }))
+    const Issuer = createWalletConnectButton({ brands: { default: np, business: bw }, fetch: lane })
+    const w = mount(Issuer, { props: { clientId: "nlw_eucc", issuance: true, business: true }, attachTo: document.body })
     await w.get("button").trigger("click")
-    await flushPromises()
-    expect(inBody("[data-testid=qr]")).not.toBeNull()
-    expect(fetch).not.toHaveBeenCalled()
+    await vi.waitFor(() => expect(inBody("[data-testid=qr]")).not.toBeNull())
+    const [url, init] = lane.mock.calls[0]
+    expect(url).toBe("https://bw.wallet-connect.eu/api/issuance/sessions?lang=nl")
+    expect(JSON.parse(init!.body as string)).toEqual({ usecase: "nlw_eucc" })
+    click(inBody("[data-testid=close_button]"))
+    await vi.waitFor(() => expect(inBody("[data-testid=wallet_modal]")).toBeNull())
+    expect(lane.mock.calls.some(([, init]) => init?.method === "DELETE")).toBe(false)
     w.unmount()
+  })
+
+  it("starts the session at sessionUrl with sessionBody, and keeps it when the parent passes an equal body", async () => {
+    const backend = fakeServer(() => ({ status: "CREATED", ul: OFFER }))
+    const Issuer = createWalletConnectButton({ brands: { default: np }, fetch: backend })
+    const sessionUrl = "https://backend.example/api/test-pid/session"
+    const w = mount(Issuer, { props: { clientId: "nlw_test_pid", issuance: true, sessionUrl, sessionBody: { person: "N3" } }, attachTo: document.body })
+    await w.get("button").trigger("click")
+    await vi.waitFor(() => expect(inBody("[data-testid=qr]")).not.toBeNull())
+    const posts = () => backend.mock.calls.filter(([, init]) => init?.method === "POST")
+    expect(posts().map(([url, init]) => [url, JSON.parse(init!.body as string)])).toEqual([[sessionUrl, { person: "N3" }]])
+
+    const before = (w.findComponent({ name: "WalletModal" }).props() as { controller: unknown }).controller
+    await w.setProps({ sessionBody: { person: "N3" } }) // a new object with the same content
+    await flushPromises()
+    expect((w.findComponent({ name: "WalletModal" }).props() as { controller: unknown }).controller).toBe(before)
+    expect(posts()).toHaveLength(1)
+    w.unmount()
+  })
+
+  it("leaves a disclosure's session token in the url to the disclosure button", async () => {
+    window.history.replaceState({}, "", "/page?session_token=tok")
+    const issuer = mount(Button, { props: { clientId: "issuer", apiKey: "k", issuance: true } })
+    await flushPromises()
+    expect(fetch).not.toHaveBeenCalled()
+    expect(issuer.find("button").exists()).toBe(true)
+    expect(window.location.search).toBe("?session_token=tok")
+    const onSuccess = vi.fn()
+    mount(Button, { props: { clientId: "verifier", apiKey: "k", onSuccess } })
+    await vi.waitFor(() => expect(onSuccess).toHaveBeenCalledWith({ attributes: { pid: {} } }))
+    expect(fetch.mock.calls.map(([url]) => url)).toEqual(["https://wallet-connect.eu/api/disclosed-attributes?session_token=tok&client_id=verifier"])
   })
 })
