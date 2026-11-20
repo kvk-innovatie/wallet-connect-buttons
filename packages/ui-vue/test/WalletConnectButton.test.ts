@@ -24,6 +24,13 @@ const fakeServer = (status: () => unknown = () => ({ status: "CREATED", ul: "wal
 const fetch = fakeServer()
 const Button = createWalletConnectButton({ brands: { default: np, business: bw, over18: up18 }, fetch, nbwalletWarning: "use nb-wallet-connect-button-vue" })
 
+/** Replaces navigator.clipboard for one test; returns the restore function. */
+const fakeClipboard = (writeText: (text: string) => Promise<void>) => {
+  const original = Object.getOwnPropertyDescriptor(navigator, "clipboard")
+  Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true })
+  return () => (original ? Object.defineProperty(navigator, "clipboard", original) : delete (navigator as { clipboard?: unknown }).clipboard)
+}
+
 const inBody = (selector: string) => document.body.querySelector<HTMLElement>(selector)
 const click = (el: Element | null) => el!.dispatchEvent(new MouseEvent("click", { bubbles: true }))
 
@@ -112,6 +119,30 @@ describe("WalletConnectButton (Vue)", () => {
     w.unmount()
   })
 
+
+  it("copies the link of the qr code (Dutch by default), or shows it to copy by hand without clipboard access", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    const restore = fakeClipboard(writeText)
+    try {
+      const lane = fakeServer(() => ({ status: "CREATED", ul: OFFER }))
+      const Issuer = createWalletConnectButton({ brands: { default: np }, fetch: lane })
+      const w = mount(Issuer, { props: { clientId: "nlw_issuer", issuance: true }, attachTo: document.body })
+      await w.get("button").trigger("click")
+      await vi.waitFor(() => expect(inBody("[data-testid=copy_link_button]")).not.toBeNull())
+      expect(inBody("[data-testid=copy_link_button]")!.textContent!.trim()).toBe("Kopieer link")
+      click(inBody("[data-testid=copy_link_button]"))
+      await vi.waitFor(() => expect(inBody("[data-testid=copy_link_button]")!.textContent!.trim()).toBe("Gekopieerd"))
+      expect(writeText).toHaveBeenCalledWith(OFFER)
+
+      writeText.mockRejectedValueOnce(new Error("denied"))
+      click(inBody("[data-testid=copy_link_button]"))
+      await vi.waitFor(() => expect(inBody("[data-testid=copy_link_manual]")).not.toBeNull())
+      expect((inBody("[data-testid=copy_link_manual]") as HTMLInputElement).value).toBe(OFFER)
+      w.unmount()
+    } finally {
+      restore()
+    }
+  })
 
   it("creates an issuance session at wallet-connect and leaves it alone when closed after the offer", async () => {
     const lane = fakeServer(() => ({ status: "CREATED", ul: OFFER }))

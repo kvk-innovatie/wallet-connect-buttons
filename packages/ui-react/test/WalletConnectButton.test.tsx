@@ -24,6 +24,13 @@ const fakeServer = (status: () => unknown = () => ({ status: "CREATED", ul: "wal
 const fetch = fakeServer()
 const Button = createWalletConnectButton({ brands: { default: np, business: bw, over18: up18 }, fetch, nbwalletWarning: "use nb-wallet-connect-button-react" })
 
+/** Replaces navigator.clipboard for one test; returns the restore function. */
+const fakeClipboard = (writeText: (text: string) => Promise<void>) => {
+  const original = Object.getOwnPropertyDescriptor(navigator, "clipboard")
+  Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true })
+  return () => (original ? Object.defineProperty(navigator, "clipboard", original) : delete (navigator as { clipboard?: unknown }).clipboard)
+}
+
 const modal = () => document.body.querySelector<HTMLElement>("[data-testid=wallet_modal]")
 const byTestId = (id: string) => document.body.querySelector<HTMLElement>(`[data-testid=${id}]`)
 
@@ -123,6 +130,31 @@ describe("WalletConnectButton (React)", () => {
       fireEvent.click(byTestId("close_button")!)
       await waitFor(() => expect(modal()).toBeNull())
       expect(deleted(lane)).toBe(false)
+    })
+
+    it("copies the link of the qr code, or shows it to copy by hand without clipboard access", async () => {
+      const writeText = vi.fn().mockResolvedValue(undefined)
+      const restore = fakeClipboard(writeText)
+      try {
+        const lane = fakeServer(() => ({ status: "CREATED", ul: OFFER }))
+        const Issuer = createWalletConnectButton({ brands: { default: np }, fetch: lane })
+        render(<Issuer clientId="nlw_issuer" issuance lang="en" />)
+        fireEvent.click(screen.getByTestId("wallet_button"))
+        await waitFor(() => expect(byTestId("copy_link_button")).not.toBeNull())
+        expect(byTestId("qr")).not.toBeNull()
+        expect(byTestId("copy_link_button")!.textContent).toBe("Copy link")
+        fireEvent.click(byTestId("copy_link_button")!)
+        await waitFor(() => expect(byTestId("copy_link_button")!.textContent).toBe("Copied"))
+        expect(writeText).toHaveBeenCalledWith(OFFER)
+        expect(byTestId("copy_link_manual")).toBeNull()
+
+        writeText.mockRejectedValueOnce(new Error("denied"))
+        fireEvent.click(byTestId("copy_link_button")!)
+        await waitFor(() => expect(byTestId("copy_link_manual")).not.toBeNull())
+        expect((byTestId("copy_link_manual") as HTMLInputElement).value).toBe(OFFER)
+      } finally {
+        restore()
+      }
     })
 
     it("cancels the session when closed during the ID step, before any offer", async () => {

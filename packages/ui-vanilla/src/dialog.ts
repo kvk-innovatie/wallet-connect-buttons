@@ -1,4 +1,6 @@
 import {
+  COPIED_MS,
+  copyToClipboard,
   type FooterCommand,
   type InstallRole,
   type SessionDriver,
@@ -26,6 +28,10 @@ export class WalletDialog {
   private element: HTMLElement | null = null
   private readonly unsubscribe: Array<() => void> = []
   private finished = false
+  /** "Copy link": the link copied last (shown as "Copied" for a moment), and whether the manual field is open. */
+  private copiedLink: string | null = null
+  private copiedTimer: ReturnType<typeof setTimeout> | undefined
+  private manualCopy = false
 
   constructor(private readonly options: WalletDialogOptions) {
     this.session = options.controller.createSession((outcome) => this.finish(outcome))
@@ -90,7 +96,9 @@ export class WalletDialog {
       clientId: c.clientId || undefined,
       issuance: c.issuance,
       credentials: c.getState().credentials,
+      copyLink: { copied: this.copiedLink, manual: this.manualCopy },
       on: {
+        copy: (link: string) => void this.copy(link),
         choose: (sessionType: SessionType) => void this.session.choose(sessionType),
         command: (command) => this.command(command),
         install: (role) => {
@@ -102,6 +110,25 @@ export class WalletDialog {
           this.render()
         },
       },
+    }
+  }
+
+  private async copy(link: string) {
+    if (await copyToClipboard(link)) {
+      this.copiedLink = link
+      if (this.copiedTimer) clearTimeout(this.copiedTimer)
+      this.copiedTimer = setTimeout(() => {
+        this.copiedLink = null
+        this.render()
+      }, COPIED_MS)
+      this.render()
+    } else if (!this.manualCopy) {
+      this.manualCopy = true
+      this.render()
+      // the whole modal is redrawn on every change, so focus the new field once, when it opens
+      const field = this.element?.querySelector<HTMLInputElement>("[data-testid=copy_link_manual]")
+      field?.focus()
+      field?.select()
     }
   }
 
@@ -119,6 +146,7 @@ export class WalletDialog {
   private finish(outcome: SessionOutcome) {
     if (this.finished) return
     this.finished = true
+    if (this.copiedTimer) clearTimeout(this.copiedTimer)
     for (const off of this.unsubscribe) off()
     this.session.dispose()
     this.element?.remove()

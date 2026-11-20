@@ -31,3 +31,15 @@ describe("word list", () => {
     expect(Object.keys(nl).sort()).toEqual(Object.keys(en).sort())
   })
 })
+
+import { LOCAL_WORDS } from "../src/i18n/local"
+import { translations as tr } from "../src/translations"
+
+describe("this repository's own words", () => {
+  it("exist in both languages, do not clash with wallet_web's words, and translate", () => {
+    expect(Object.keys(LOCAL_WORDS.nl).sort()).toEqual(Object.keys(LOCAL_WORDS.en).sort())
+    for (const word of Object.keys(LOCAL_WORDS.en)) expect(WORDS as readonly string[]).not.toContain(word)
+    expect(tr("en")("copy_link")).toBe("Copy link")
+    expect(tr("nl")("copy_link_copied")).toBe("Gekopieerd")
+  })
+})

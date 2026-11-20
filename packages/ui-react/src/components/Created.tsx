@@ -1,5 +1,6 @@
 import { ICONS, onboardingLink, type InstallRole, type SessionType } from "@wallet-connect/core"
 import { useDialog, useT } from "../context"
+import { CopyLink } from "./CopyLink"
 import { Icon } from "./Icon"
 import { QrCode } from "./QrCode"
 
@@ -23,7 +24,14 @@ export const DeviceChoice = ({ ul, onChoice }: { ul: URL; onChoice: (sessionType
 }
 
 export const CreatedSection = ({ sameDeviceUl, crossDeviceUl, sessionType, onChoice }: { sameDeviceUl: URL; crossDeviceUl: URL; sessionType: SessionType; onChoice: (sessionType: SessionType) => void }) =>
-  sessionType === "same_device" ? <DeviceChoice ul={sameDeviceUl} onChoice={onChoice} /> : <QrCode ul={crossDeviceUl} />
+  sessionType === "same_device" ? (
+    <DeviceChoice ul={sameDeviceUl} onChoice={onChoice} />
+  ) : (
+    <>
+      <QrCode ul={crossDeviceUl} />
+      <CopyLink ul={crossDeviceUl} />
+    </>
+  )
 
 /** Desktop hand-off to the phone: the onboarding link as a QR code for the chosen role. */
 export const InstallSection = ({ role }: { role: InstallRole }) => {

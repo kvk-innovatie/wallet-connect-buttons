@@ -35,7 +35,10 @@ export interface ModalContext {
   clientId?: string
   issuance: boolean
   credentials: RequestedCredential[]
+  /** "Copy link" under the QR code: the link copied last (for "Copied"), and whether to show it to copy by hand. */
+  copyLink: { copied: string | null; manual: boolean }
   on: {
+    copy(link: string): void
     choose(sessionType: SessionType): void
     command(command: FooterCommand): void
     install(role: InstallRole): void
@@ -85,6 +88,33 @@ export const renderQrCode = (ctx: ModalContext, ul: URL, title?: string): HTMLEl
     h("h2", {}, title ?? ctx.t("qr_code_title")),
     h("div", { class: "wcb-qr", "data-testid": "qr" }, canvas, h("div", { role: "img", class: "wcb-logo", "aria-label": ctx.t("qr_code_label") })),
   ]
+}
+
+/**
+ * "Copy link" under the session's QR code: puts the link the code encodes on the clipboard (e.g. for a wallet
+ * on this computer or a test wallet that cannot scan). Without clipboard access it shows the link to copy by hand.
+ */
+export const renderCopyLink = (ctx: ModalContext, ul: URL): HTMLElement => {
+  const link = ul.toString()
+  // an ID step hands out a new link every few seconds: "Copied" belongs to the link that was copied
+  const copied = ctx.copyLink.copied === link
+  return h(
+    "div",
+    { class: "wcb-copy" },
+    h(
+      "button",
+      { type: "button", class: "wcb-action wcb-link", "data-testid": "copy_link_button", onclick: () => ctx.on.copy(link) },
+      icon(copied ? ICONS.check : ICONS.copy),
+      h("span", { "aria-live": "polite" }, ctx.t(copied ? "copy_link_copied" : "copy_link")),
+    ),
+    ctx.copyLink.manual &&
+      h(
+        "label",
+        {},
+        h("span", {}, ctx.t("copy_link_manual")),
+        h("input", { readonly: true, value: link, "data-testid": "copy_link_manual", onfocus: (e: Event) => (e.target as HTMLInputElement).select() }),
+      ),
+  )
 }
 
 const renderDeviceChoice = (ctx: ModalContext, ul: URL): HTMLElement[] => [
@@ -155,7 +185,9 @@ const renderMainContent = (ctx: ModalContext): (HTMLElement | SVGElement)[] => {
     }
     case "created": {
       if (state.kind !== "created") return []
-      return state.session.sessionType === "same_device" ? renderDeviceChoice(ctx, state.sameDeviceUl) : renderQrCode(ctx, state.crossDeviceUl)
+      return state.session.sessionType === "same_device"
+        ? renderDeviceChoice(ctx, state.sameDeviceUl)
+        : [...renderQrCode(ctx, state.crossDeviceUl), renderCopyLink(ctx, state.crossDeviceUl)]
     }
     case "in-progress":
       return [svg(ICONS.phoneArrow, { className: "wcb-status", size: 24 }), h("h2", { "data-testid": "in_progress" }, ctx.t("in_progress_title"))]

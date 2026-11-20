@@ -3,6 +3,17 @@
 The three packages (`wallet-connect-button-{react,vue,vanillajs}`) share one version. The NB Wallet packages are
 released from the nb-wallet-connect-buttons repository.
 
+## 2.2.0
+
+### Added
+
+- **Copy link** under the session's QR code (the cross-device view of a disclosure or an issuance): it puts the
+  link the code encodes on the clipboard, for example an `openid-credential-offer://` offer for a wallet on the
+  same computer or a test wallet that cannot scan. The button says "Copied" for two seconds; an ID step that
+  hands out a new link resets it. Where the page may not use the clipboard (no Clipboard API, an insecure
+  context, or the browser refuses), the link appears in a selected field to copy by hand. Dutch and English
+  texts. The onboarding QR code (install the wallet) has no copy button.
+
 ## 2.1.0
 
 Issuance on today's wallet-connect.eu, which runs the WE BUILD lane.

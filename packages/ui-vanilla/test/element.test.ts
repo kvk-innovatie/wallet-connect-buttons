@@ -30,6 +30,13 @@ const mount = (html: string) => {
   document.body.innerHTML = html
   return document.body.firstElementChild as HTMLElement & { walletConnect: unknown }
 }
+/** Replaces navigator.clipboard for one test; returns the restore function. */
+const fakeClipboard = (writeText: (text: string) => Promise<void>) => {
+  const original = Object.getOwnPropertyDescriptor(navigator, "clipboard")
+  Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true })
+  return () => (original ? Object.defineProperty(navigator, "clipboard", original) : delete (navigator as { clipboard?: unknown }).clipboard)
+}
+
 const inShadow = (el: Element, selector: string) => el.shadowRoot!.querySelector<HTMLElement>(selector)
 const click = (el: Element | null) => el!.dispatchEvent(new MouseEvent("click", { bubbles: true }))
 const flush = () => new Promise((r) => setTimeout(r, 0))
@@ -124,6 +131,31 @@ describe("<wallet-connect-button>", () => {
     expect(() => defineWalletConnectButton("wallet-connect-button", brands)).not.toThrow()
   })
 
+
+  it("copies the link of the qr code and keeps 'Copied' across redraws, or shows it to copy by hand", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    const restore = fakeClipboard(writeText)
+    try {
+      const lane = fakeServer(() => ({ status: "CREATED", ul: OFFER }))
+      defineWalletConnectButton("wcb-copier", brands, { fetch: lane })
+      const el = mount(`<wcb-copier client-id="nlw_issuer" issuance lang="en"></wcb-copier>`)
+      click(inShadow(el, "[part=button]"))
+      await vi.waitFor(() => expect(inShadow(el, "[data-testid=copy_link_button]")).not.toBeNull())
+      expect(inShadow(el, "[data-testid=copy_link_button]")!.textContent).toBe("Copy link")
+      click(inShadow(el, "[data-testid=copy_link_button]"))
+      await vi.waitFor(() => expect(inShadow(el, "[data-testid=copy_link_button]")!.textContent).toBe("Copied"))
+      expect(writeText).toHaveBeenCalledWith(OFFER)
+
+      writeText.mockRejectedValueOnce(new Error("denied"))
+      click(inShadow(el, "[data-testid=copy_link_button]"))
+      await vi.waitFor(() => expect(inShadow(el, "[data-testid=copy_link_manual]")).not.toBeNull())
+      expect((inShadow(el, "[data-testid=copy_link_manual]") as HTMLInputElement).value).toBe(OFFER)
+      click(inShadow(el, "[data-testid=close_button]"))
+      await vi.waitFor(() => expect(inShadow(el, "[data-testid=wallet_modal]")).toBeNull())
+    } finally {
+      restore()
+    }
+  })
 
   it("creates an issuance session at wallet-connect and leaves it alone when closed after the offer", async () => {
     const lane = fakeServer(() => ({ status: "CREATED", ul: OFFER }))

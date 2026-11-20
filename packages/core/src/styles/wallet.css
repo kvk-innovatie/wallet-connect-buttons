@@ -378,6 +378,43 @@
   z-index: 1055;
 }
 
+/* Copy link, under the session's QR code */
+.wcb-modal div.wcb-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+
+  width: 100%;
+}
+
+.wcb-modal div.wcb-copy .wcb-action.wcb-link {
+  width: fit-content;
+  padding: 0.5rem 1rem;
+  color: var(--primary-color);
+}
+
+.wcb-modal div.wcb-copy label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  width: 100%;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.wcb-modal div.wcb-copy input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.375rem 0.5rem;
+
+  border: 1px solid #c4c4c4;
+  border-radius: 0.375rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+}
+
 .wcb-modal section.wcb-website {
   display: flex;
   flex-direction: column;
